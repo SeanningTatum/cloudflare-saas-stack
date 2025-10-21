@@ -8,7 +8,7 @@ export const env = createEnv({
    */
   server: {
     AUTH_URL: z.string().optional().default("http://localhost:3000"),
-    AUTH_SECRET: z.string(),
+    BETTER_AUTH_SECRET: z.string(),
     // AUTH_GOOGLE_ID: z.string().optional().default(""),
     // AUTH_GOOGLE_SECRET: z.string().optional().default(""),
   },
@@ -31,7 +31,7 @@ export const env = createEnv({
    */
   runtimeEnv: {
     AUTH_URL: process.env.AUTH_URL,
-    AUTH_SECRET: process.env.AUTH_SECRET,
+    BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
     // AUTH_GOOGLE_ID: process.env.AUTH_GOOGLE_ID,
     // AUTH_GOOGLE_SECRET: process.env.AUTH_GOOGLE_SECRET,
     NEXT_PUBLIC_AUTH_URL: process.env.NEXT_PUBLIC_AUTH_URL,

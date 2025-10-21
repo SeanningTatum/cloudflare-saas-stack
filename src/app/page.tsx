@@ -1,6 +1,6 @@
 
-import { getThemeToggler } from "@/lib/theme/get-theme-button";
-import { api } from "@/lib/trpc/server";
+import { getThemeToggler } from "@/features/core/components/theme/get-theme-button";
+import { api } from "@/features/core/trpc/server";
 
 export default async function Page() {
 	const SetThemeButton = getThemeToggler();

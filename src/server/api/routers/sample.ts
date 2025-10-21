@@ -1,4 +1,8 @@
-import { baseProcedure, createTRPCRouter } from "@/server/trpc";
+import {
+  baseProcedure,
+  createTRPCRouter,
+  protectedProcedure,
+} from "@/server/trpc";
 import { z } from "zod";
 
 export const sampleRouter = createTRPCRouter({
@@ -13,4 +17,14 @@ export const sampleRouter = createTRPCRouter({
         greeting: `hello ${input.text}`,
       };
     }),
+
+  // Example protected procedure - requires authentication
+  getSecretMessage: protectedProcedure.query(({ ctx }) => {
+    return {
+      message: `Hello ${
+        ctx.user.name || ctx.user.email
+      }! This is a secret message.`,
+      userId: ctx.user.id,
+    };
+  }),
 });
