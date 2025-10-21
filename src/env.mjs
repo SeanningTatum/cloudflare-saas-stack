@@ -7,10 +7,10 @@ export const env = createEnv({
    * Will throw if you access these variables on the client.
    */
   server: {
-    AUTH_URL: z.string(),
+    AUTH_URL: z.string().optional().default("http://localhost:3000"),
     AUTH_SECRET: z.string(),
-    AUTH_GOOGLE_ID: z.string(),
-    AUTH_GOOGLE_SECRET: z.string(),
+    // AUTH_GOOGLE_ID: z.string().optional().default(""),
+    // AUTH_GOOGLE_SECRET: z.string().optional().default(""),
   },
   /*
    * Environment variables available on the client (and server).
@@ -30,9 +30,12 @@ export const env = createEnv({
    * 💡 You'll get type errors if not all variables from `server` & `client` are included here.
    */
   runtimeEnv: {
+    AUTH_URL: process.env.AUTH_URL,
     AUTH_SECRET: process.env.AUTH_SECRET,
-    AUTH_GOOGLE_ID: process.env.AUTH_GOOGLE_ID,
-    AUTH_GOOGLE_SECRET: process.env.AUTH_GOOGLE_SECRET,
+    // AUTH_GOOGLE_ID: process.env.AUTH_GOOGLE_ID,
+    // AUTH_GOOGLE_SECRET: process.env.AUTH_GOOGLE_SECRET,
     NEXT_PUBLIC_AUTH_URL: process.env.NEXT_PUBLIC_AUTH_URL,
   },
+  skipValidation:
+    !!process.env.SKIP_ENV_VALIDATION || process.env.NODE_ENV === "production",
 });

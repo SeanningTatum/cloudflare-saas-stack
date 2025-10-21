@@ -15,7 +15,8 @@ Supermemory now has 20k+ users and it runs on $5/month. safe to say, it's _very_
 - [Drizzle ORM](https://orm.drizzle.team/) for database access
 - [NextAuth](https://next-auth.js.org/) for authentication
 - [Cloudflare D1](https://www.cloudflare.com/developer-platform/d1/) for serverless databases
-- [Cloudflare Pages](https://pages.cloudflare.com/) for hosting
+- [Cloudflare Workers](https://workers.cloudflare.com/) for hosting (via OpenNext)
+- [Cloudflare R2](https://www.cloudflare.com/developer-platform/r2/) for file storage
 - [ShadcnUI](https://shadcn.com/) as the component library
 
 ## Getting Started
@@ -40,13 +41,12 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 ## Cloudflare Integration
 
-Besides the `dev` script, `c3` has added extra scripts for Cloudflare Pages integration:
-- `pages:build`: Build the application for Pages using [`@cloudflare/next-on-pages`](https://github.com/cloudflare/next-on-pages) CLI
-- `preview`: Locally preview your Pages application using [Wrangler](https://developers.cloudflare.com/workers/wrangler/) CLI
-- `deploy`: Deploy your Pages application using Wrangler CLI
-- `cf-typegen`: Generate typescript types for Cloudflare env.
+The application uses [`@opennextjs/cloudflare`](https://opennext.js.org/cloudflare) to deploy Next.js to Cloudflare Workers:
+- `preview`: Build and locally preview your application using [OpenNext Cloudflare](https://opennext.js.org/cloudflare)
+- `deploy`: Build and deploy your application to Cloudflare Workers
+- `cf-typegen`: Generate TypeScript types for Cloudflare bindings
 
-> __Note:__ While the `dev` script is optimal for local development, you should preview your Pages application periodically to ensure it works properly in the Pages environment.
+> __Note:__ While the `dev` script is optimal for local development, you should preview your application periodically to ensure it works properly in the Cloudflare Workers environment.
 
 ## Bindings
 

@@ -1,9 +1,5 @@
-import { Button } from "@/components/ui/button";
-import { sql } from "drizzle-orm";
-import { db } from "@/server/db";
-import { getThemeToggler } from "@/lib/theme/get-theme-button";
 
-export const runtime = "edge";
+import { getThemeToggler } from "@/lib/theme/get-theme-button";
 
 export default async function Page() {
 	const SetThemeButton = getThemeToggler();

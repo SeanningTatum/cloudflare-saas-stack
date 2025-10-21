@@ -1,7 +1,14 @@
 name = "cloudflare-saas-stack"
-compatibility_date = "2024-09-03"
-compatibility_flags = [ "nodejs_compat" ]
-pages_build_output_dir = ".vercel/output/static"
+main = ".open-next/worker.js"
+compatibility_date = "2025-03-25"
+compatibility_flags = ["nodejs_compat"]
+
+[assets]
+directory = ".open-next/assets"
+binding = "ASSETS"
+
+[vars]
+
 
 [placement]
 mode = "smart"
@@ -9,5 +16,16 @@ mode = "smart"
 [[d1_databases]]
 binding = "DATABASE"
 database_name = "cloudflare-saas-stack-db"
-database_id = "54680b71-236a-4cca-91dd-4529462443d8"
+database_id = "07586252-bbff-4c11-a4c9-0390bbe189d1"
 migrations_dir = "./drizzle"
+
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "cloudflare-saas-stack-bucket"
+
+[observability]
+[observability.logs]
+enabled = true
+head_sampling_rate = 1
+invocation_logs = true
+persist = true
