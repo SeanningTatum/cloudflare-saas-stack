@@ -48,7 +48,7 @@ export function SignupForm() {
         setError(result.error.message || "Failed to sign up")
       } else {
         // Successfully signed up
-        router.push("/")
+        router.push("/dashboard")
         router.refresh()
       }
     } catch (err) {
