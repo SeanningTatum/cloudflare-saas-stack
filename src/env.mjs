@@ -10,7 +10,7 @@ export const env = createEnv({
     AUTH_URL: z.string(),
     AUTH_SECRET: z.string(),
     AUTH_GOOGLE_ID: z.string(),
-    AUTH_GOOGLE_SECRET: z.string()
+    AUTH_GOOGLE_SECRET: z.string(),
   },
   /*
    * Environment variables available on the client (and server).
@@ -18,6 +18,10 @@ export const env = createEnv({
    * 💡 You'll get type errors if these are not prefixed with NEXT_PUBLIC_.
    */
   client: {
+    NEXT_PUBLIC_AUTH_URL: z
+      .string()
+      .optional()
+      .default("http://localhost:3000"),
   },
   /*
    * Due to how Next.js bundles environment variables on Edge and Client,
@@ -28,6 +32,7 @@ export const env = createEnv({
   runtimeEnv: {
     AUTH_SECRET: process.env.AUTH_SECRET,
     AUTH_GOOGLE_ID: process.env.AUTH_GOOGLE_ID,
-    AUTH_GOOGLE_SECRET: process.env.AUTH_GOOGLE_SECRET
+    AUTH_GOOGLE_SECRET: process.env.AUTH_GOOGLE_SECRET,
+    NEXT_PUBLIC_AUTH_URL: process.env.NEXT_PUBLIC_AUTH_URL,
   },
 });

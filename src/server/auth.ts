@@ -1,17 +1,12 @@
-import NextAuth from "next-auth";
-import Google from "next-auth/providers/google";
-import { DrizzleAdapter } from "@auth/drizzle-adapter";
-import { db } from "./db";
+import { db } from "@/server/db";
+import { betterAuth } from "better-auth";
+import { drizzleAdapter } from "better-auth/adapters/drizzle";
 
-export const {
-	handlers: { GET, POST },
-	signIn,
-	signOut,
-	auth,
-} = NextAuth({
-	trustHost: true,
-	adapter: DrizzleAdapter(db),
-	providers: [
-		Google
-	],
+export const auth = betterAuth({
+  database: drizzleAdapter(db, {
+    provider: "sqlite",
+  }),
+  emailAndPassword: {
+    enabled: true,
+  },
 });

@@ -1,20 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { sql } from "drizzle-orm";
-import { auth, signIn, signOut } from "@/server/auth";
 import { db } from "@/server/db";
-import { users } from "@/server/db/schema";
 import { getThemeToggler } from "@/lib/theme/get-theme-button";
 
 export const runtime = "edge";
 
 export default async function Page() {
-	const session = await auth();
 
-	const userCount = await db
-		.select({
-			count: sql<number>`count(*)`.mapWith(Number),
-		})
-		.from(users);
 
 	const SetThemeButton = getThemeToggler();
 
@@ -77,41 +69,13 @@ export default async function Page() {
 					<li>Database using Cloudflare&apos;s D1 serverless databases</li>
 					<li>Drizzle ORM, already connected to your database and auth ⚡</li>
 					<li>Light/darkmode theming that works with server components (!)</li>
-						<li>Styling using TailwindCSS and ShadcnUI</li>
-						<li>Turborepo with a landing page and shared components</li>
-						<li>Cloudflare wrangler for quick functions on the edge</li>
-						<li>
-							... best part: everything&apos;s already set up for you. Just code!
-						</li>
+					<li>Styling using TailwindCSS and ShadcnUI</li>
+					<li>Turborepo with a landing page and shared components</li>
+					<li>Cloudflare wrangler for quick functions on the edge</li>
+					<li>
+						... best part: everything&apos;s already set up for you. Just code!
+					</li>
 				</ul>
-				<div className="mt-4 flex flex-col gap-2">
-					<span>Number of users in database: {userCount[0]!.count}</span>
-				</div>
-				{session?.user?.email ? (
-					<>
-						<div className="mt-4 flex flex-col gap-2">
-							<span>Hello {session.user.name} 👋</span>
-							<span>{session.user.email}</span>
-						</div>
-						<form
-							action={async () => {
-								"use server";
-								await signOut();
-							}}
-						>
-							<Button className="mt-4">Sign out</Button>
-						</form>
-					</>
-				) : (
-					<form
-						action={async () => {
-							"use server";
-							await signIn("google");
-						}}
-					>
-						<Button className="mt-4">Login with Google</Button>
-					</form>
-				)}
 			</div>
 		</main>
 	);
