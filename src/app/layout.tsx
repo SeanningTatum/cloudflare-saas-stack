@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeScript } from "@/lib/theme/theme-script";
+import { TRPCProvider } from "@/lib/trpc/client";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -16,11 +17,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <head>
-        <ThemeScript/>
-      </head>
-      <body className={inter.className}>{children}</body>
-    </html>
+    <TRPCProvider>
+      <html lang="en">
+        <head>
+          <ThemeScript />
+        </head>
+        <body className={inter.className}>{children}</body>
+      </html>
+    </TRPCProvider>
   );
 }

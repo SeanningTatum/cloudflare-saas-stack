@@ -1,13 +1,18 @@
 
 import { getThemeToggler } from "@/lib/theme/get-theme-button";
+import { api } from "@/lib/trpc/server";
 
 export default async function Page() {
 	const SetThemeButton = getThemeToggler();
+
+	const sup = await api.sample.hello({ text: "world" })
 
 	return (
 		<main className="flex flex-col items-center justify-center min-h-screen">
 			<div className="flex max-w-2xl justify-between w-full">
 				<SetThemeButton />
+
+				{sup.greeting}
 
 				<div className="flex gap-2 items-center justify-center">
 					{" "}
