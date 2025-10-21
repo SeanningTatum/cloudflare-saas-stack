@@ -6,8 +6,6 @@ import { getThemeToggler } from "@/lib/theme/get-theme-button";
 export const runtime = "edge";
 
 export default async function Page() {
-
-
 	const SetThemeButton = getThemeToggler();
 
 	return (
