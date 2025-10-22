@@ -74,9 +74,7 @@ export default async function Page() {
 					<Link href="/login">
 						<Button>Login</Button>
 					</Link>
-					<Link href="/dashboard/upload">
-						<Button variant="outline">Try R2 Upload</Button>
-					</Link>
+
 				</div>
 			</div>
 		</main>

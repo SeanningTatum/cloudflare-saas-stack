@@ -1,6 +1,7 @@
 import { getAuth } from "@/server/auth";
 import { headers } from "next/headers";
 import { User } from "better-auth";
+import { redirect } from "next/navigation";
 
 export async function getCurrentUser(): Promise<User | null> {
   const auth = await getAuth();
@@ -14,4 +15,14 @@ export async function getCurrentUser(): Promise<User | null> {
   }
 
   return sessionData.user;
+}
+
+export async function requireAuth(): Promise<User> {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  return user;
 }
