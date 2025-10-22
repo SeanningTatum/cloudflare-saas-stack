@@ -70,9 +70,14 @@ export default async function Page() {
 					</li>
 				</ul>
 
-				<Link href="/login">
-					<Button className="mt-4">Login</Button>
-				</Link>
+				<div className="flex gap-3 mt-4">
+					<Link href="/login">
+						<Button>Login</Button>
+					</Link>
+					<Link href="/dashboard/upload">
+						<Button variant="outline">Try R2 Upload</Button>
+					</Link>
+				</div>
 			</div>
 		</main>
 	);
