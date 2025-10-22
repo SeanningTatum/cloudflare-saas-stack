@@ -6,28 +6,27 @@ import type { Auth } from "better-auth";
 
 let authInstance: Auth | null = null;
 
+async function createBetterAuthInstance() {
+  const db = await getDb();
+
+  const { env } = await getCloudflareContext({ async: true });
+
+  return betterAuth({
+    database: drizzleAdapter(db, {
+      provider: "sqlite",
+    }),
+    emailAndPassword: {
+      enabled: true,
+    },
+    secret: env.BETTER_AUTH_SECRET,
+    baseURL: env.NEXT_PUBLIC_AUTH_URL || "http://localhost:3000",
+  });
+}
+
 export async function getAuth() {
   if (!authInstance) {
-    const db = await getDb();
-
-    const { env } = await getCloudflareContext({ async: true });
-
-    // Base URL should be set based on the request or environment
-    const baseURL =
-      process.env.AUTH_URL ||
-      process.env.NEXT_PUBLIC_AUTH_URL ||
-      "http://localhost:3000";
-
-    authInstance = betterAuth({
-      database: drizzleAdapter(db, {
-        provider: "sqlite",
-      }),
-      emailAndPassword: {
-        enabled: true,
-      },
-      secret: env.BETTER_AUTH_SECRET,
-      baseURL,
-    });
+    authInstance = await createBetterAuthInstance();
   }
+
   return authInstance;
 }

@@ -1,18 +1,18 @@
 
-import { getThemeToggler } from "@/features/core/components/theme/get-theme-button";
-import { api } from "@/features/core/trpc/server";
+import { DisplayHelloWorld } from "@/components/ai/display-hello-world";
+import { getThemeToggler } from "@/components/theme/get-theme-button";
+import { api } from "@/trpc/server";
 
 export default async function Page() {
 	const SetThemeButton = getThemeToggler();
 
-	const sup = await api.sample.hello({ text: "world" })
 
 	return (
 		<main className="flex flex-col items-center justify-center min-h-screen">
 			<div className="flex max-w-2xl justify-between w-full">
 				<SetThemeButton />
 
-				{sup.greeting}
+				<DisplayHelloWorld />
 
 				<div className="flex gap-2 items-center justify-center">
 					{" "}
@@ -40,10 +40,6 @@ export default async function Page() {
 					</svg>
 					<span className="italic">Cloudflare Next Saas Starter</span>
 				</div>
-
-				<div className="border border-black dark:border-white rounded-2xl p-2 flex items-center">
-					Start by editing apps/web/page.tsx
-				</div>
 			</div>
 
 			<div className="max-w-2xl text-start w-full mt-16">
@@ -63,7 +59,7 @@ export default async function Page() {
 				Here&apos;s what the stack includes:
 				<ul className="list-disc mt-4 prose dark:prose-invert">
 					<li>
-						Authentication with <code>next-auth</code>
+						Authentication with <code>BetterAuth</code>
 					</li>
 					<li>Database using Cloudflare&apos;s D1 serverless databases</li>
 					<li>Drizzle ORM, already connected to your database and auth ⚡</li>

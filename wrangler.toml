@@ -8,6 +8,8 @@ directory = ".open-next/assets"
 binding = "ASSETS"
 
 [vars]
+NEXT_PUBLIC_AUTH_URL = ''
+BETTER_AUTH_SECRET = ''
 
 
 [placement]

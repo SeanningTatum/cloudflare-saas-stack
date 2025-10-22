@@ -4,6 +4,7 @@ import {
   protectedProcedure,
 } from "@/server/trpc";
 import { z } from "zod";
+import { getHelloWorld } from "../repositories/ai";
 
 export const sampleRouter = createTRPCRouter({
   hello: baseProcedure
@@ -12,9 +13,12 @@ export const sampleRouter = createTRPCRouter({
         text: z.string(),
       })
     )
-    .query(({ input }) => {
+    .query(async ({ input, ctx }) => {
+      const aiResponse = await getHelloWorld(ctx);
+
       return {
         greeting: `hello ${input.text}`,
+        aiResponse,
       };
     }),
 

@@ -2,6 +2,8 @@ import { initTRPC, TRPCError } from "@trpc/server";
 import { cache } from "react";
 import superjson from "superjson";
 import { getAuth } from "@/server/auth";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
+import { getDb } from "./db";
 
 /**
  * Creates the tRPC context with better-auth session
@@ -9,6 +11,8 @@ import { getAuth } from "@/server/auth";
  */
 export const createTRPCContext = cache(async (opts?: { req: Request }) => {
   const auth = await getAuth();
+  const db = await getDb();
+  const { env } = await getCloudflareContext({ async: true });
 
   let session = null;
   let user = null;
@@ -34,12 +38,14 @@ export const createTRPCContext = cache(async (opts?: { req: Request }) => {
     session,
     user,
     auth,
+    ai: env.AI,
+    db,
   };
 });
 
-type Context = Awaited<ReturnType<typeof createTRPCContext>>;
+export type TRPCContext = Awaited<ReturnType<typeof createTRPCContext>>;
 
-const t = initTRPC.context<Context>().create({
+const t = initTRPC.context<TRPCContext>().create({
   /**
    * @see https://trpc.io/docs/server/data-transformers
    */

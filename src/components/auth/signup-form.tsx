@@ -1,10 +1,10 @@
 "use client"
 
 import { useState } from "react"
-import { signIn } from "@/features/auth/lib/auth-client"
-import { Button } from "@/features/core/components/ui/button"
-import { Input } from "@/features/core/components/ui/input"
-import { Label } from "@/features/core/components/ui/label"
+import { signUp } from "@/lib/auth/auth-client"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import {
   Card,
   CardContent,
@@ -12,13 +12,15 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/features/core/components/ui/card"
+} from "@/components/ui/card"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 
-export function LoginForm() {
+export function SignupForm() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
+  const [name, setName] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const router = useRouter()
@@ -29,15 +31,23 @@ export function LoginForm() {
     setIsLoading(true)
 
     try {
-      const result = await signIn.email({
+      // Validate password confirmation
+      if (password !== confirmPassword) {
+        setError("Passwords do not match")
+        setIsLoading(false)
+        return
+      }
+
+      const result = await signUp.email({
         email,
         password,
+        name,
       })
 
       if (result.error) {
-        setError(result.error.message || "Failed to sign in")
+        setError(result.error.message || "Failed to sign up")
       } else {
-        // Successfully signed in
+        // Successfully signed up
         router.push("/dashboard")
         router.refresh()
       }
@@ -52,14 +62,26 @@ export function LoginForm() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-2xl">Welcome back</CardTitle>
+        <CardTitle className="text-2xl">Create an account</CardTitle>
         <CardDescription>
-          Enter your email and password to sign in
+          Enter your information to create an account
         </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit}>
           <div className="flex flex-col gap-6">
+            <div className="grid gap-2">
+              <Label htmlFor="name">Name</Label>
+              <Input
+                id="name"
+                type="text"
+                placeholder="John Doe"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+                disabled={isLoading}
+              />
+            </div>
             <div className="grid gap-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -83,6 +105,21 @@ export function LoginForm() {
                 disabled={isLoading}
                 minLength={8}
               />
+              <p className="text-xs text-muted-foreground">
+                Must be at least 8 characters
+              </p>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                disabled={isLoading}
+                minLength={8}
+              />
             </div>
             {error && (
               <div className="text-sm text-destructive">
@@ -90,22 +127,23 @@ export function LoginForm() {
               </div>
             )}
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Loading..." : "Sign in"}
+              {isLoading ? "Loading..." : "Sign up"}
             </Button>
           </div>
         </form>
       </CardContent>
       <CardFooter className="flex flex-col gap-4">
         <div className="text-center text-sm">
-          Don&apos;t have an account?{" "}
+          Already have an account?{" "}
           <Link
-            href="/signup"
+            href="/login"
             className="underline underline-offset-4 hover:text-primary"
           >
-            Sign up
+            Sign in
           </Link>
         </div>
       </CardFooter>
     </Card>
   )
 }
+

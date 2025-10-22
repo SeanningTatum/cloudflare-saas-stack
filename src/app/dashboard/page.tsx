@@ -1,6 +1,6 @@
-import { SignOutButton } from "@/features/auth/components/signout-button";
-import { getCurrentUser } from "@/features/auth/lib/auth-server";
-import { api } from "@/features/core/trpc/server";
+import { SignOutButton } from "@/components/auth/signout-button";
+import { getCurrentUser } from "@/lib/auth/auth-server";
+import { api } from "@/trpc/server";
 import { redirect } from "next/navigation";
 
 
