@@ -98,6 +98,7 @@ async function promptForAccountId(
 
 let bucketR2Name: string;
 let dbName: string;
+let kvNamespaceName: string;
 
 // Function to create database and update wrangler.toml
 async function createDatabaseAndConfigure() {
@@ -227,6 +228,80 @@ async function createBucketR2() {
   outro("Bucket configuration completed.");
 }
 
+async function createKVNamespace() {
+  const wranglerTomlPath = path.join(__dirname, "..", "wrangler.toml");
+  let wranglerToml: toml.JsonMap;
+
+  try {
+    const wranglerTomlContent = fs.readFileSync(wranglerTomlPath, "utf-8");
+    wranglerToml = toml.parse(wranglerTomlContent);
+  } catch (error) {
+    console.error("\x1b[31mError reading wrangler.toml:", error, "\x1b[0m");
+    cancel("Operation cancelled.");
+  }
+
+  const kvSpinner = spinner();
+  const defaultKVName = `${path.basename(process.cwd())}-kv`;
+  kvNamespaceName = await prompt(
+    "Enter the name of your KV namespace",
+    defaultKVName
+  );
+  kvSpinner.start("Creating KV namespace...");
+
+  const kvOutput = executeCommand(
+    `wrangler kv:namespace create ${kvNamespaceName}`
+  );
+
+  let namespaceId: string;
+
+  if (kvOutput === undefined || typeof kvOutput !== "string") {
+    console.error(
+      "\x1b[31mFailed to create KV namespace. Please try again.\x1b[0m"
+    );
+    cancel("Operation cancelled.");
+    return;
+  }
+
+  // Extract namespace ID from the output
+  // Expected format: id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  const matchResult = kvOutput.match(/id = "([^"]+)"/);
+  if (matchResult && matchResult.length === 2) {
+    namespaceId = matchResult[1]!;
+  } else {
+    console.error(
+      "\x1b[31mFailed to extract KV namespace ID from the output.\x1b[0m"
+    );
+    cancel("Operation cancelled.");
+    return;
+  }
+
+  kvSpinner.stop("KV namespace created.");
+
+  // Update wrangler.toml with KV configuration
+  wranglerToml = {
+    ...wranglerToml!,
+    kv_namespaces: [
+      {
+        binding: "KV",
+        id: namespaceId,
+      },
+    ],
+  };
+
+  try {
+    const updatedToml = toml.stringify(wranglerToml);
+    fs.writeFileSync(wranglerTomlPath, updatedToml);
+    console.log(
+      "\x1b[33mKV namespace configuration updated in wrangler.toml\x1b[0m"
+    );
+  } catch (error) {
+    console.error("\x1b[31mError updating wrangler.toml:", error, "\x1b[0m");
+    cancel("Operation cancelled.");
+  }
+
+  outro("KV namespace configuration completed.");
+}
+
 // Function to prompt for Google client credentials
 async function promptForGoogleClientCredentials() {
   intro("Now, time for auth!");
@@ -277,22 +352,89 @@ function generateSecureRandomString(length: number): string {
 
 // Function to update .dev.vars with secure random string
 async function updateDevVarsWithSecret() {
-  const secret = generateSecureRandomString(32);
+  const authSecret = generateSecureRandomString(32);
+  const betterAuthSecret = generateSecureRandomString(32);
   const devVarsPath = path.join(__dirname, "..", ".dev.vars");
 
   try {
-    if (!fs.readFileSync(devVarsPath, "utf-8").includes("AUTH_SECRET")) {
-      fs.appendFileSync(devVarsPath, `\nAUTH_SECRET=${secret}`);
-      console.log("\x1b[33mSecret appended to .dev.vars file.\x1b[0m");
+    const devVarsContent = fs.readFileSync(devVarsPath, "utf-8");
+
+    if (!devVarsContent.includes("AUTH_SECRET")) {
+      fs.appendFileSync(devVarsPath, `\nAUTH_SECRET=${authSecret}`);
+      console.log("\x1b[33mAUTH_SECRET appended to .dev.vars file.\x1b[0m");
     } else {
       console.log("\x1b[31mAUTH_SECRET already exists in .dev.vars\x1b[0m");
+    }
+
+    if (!devVarsContent.includes("BETTER_AUTH_SECRET")) {
+      fs.appendFileSync(
+        devVarsPath,
+        `\nBETTER_AUTH_SECRET=${betterAuthSecret}`
+      );
+      console.log(
+        "\x1b[33mBETTER_AUTH_SECRET appended to .dev.vars file.\x1b[0m"
+      );
+    } else {
+      console.log(
+        "\x1b[31mBETTER_AUTH_SECRET already exists in .dev.vars\x1b[0m"
+      );
     }
   } catch (error) {
     console.error("\x1b[31mError updating .dev.vars file:", error, "\x1b[0m");
     cancel("Operation cancelled.");
   }
 
-  outro(".dev.vars updated with secure secret.");
+  outro(".dev.vars updated with secure secrets.");
+}
+
+// Function to configure environment variables in wrangler.toml
+async function configureWranglerEnvVars() {
+  intro("Configuring environment variables for deployment...");
+
+  const wranglerTomlPath = path.join(__dirname, "..", "wrangler.toml");
+  let wranglerToml: toml.JsonMap;
+
+  try {
+    const wranglerTomlContent = fs.readFileSync(wranglerTomlPath, "utf-8");
+    wranglerToml = toml.parse(wranglerTomlContent);
+  } catch (error) {
+    console.error("\x1b[31mError reading wrangler.toml:", error, "\x1b[0m");
+    cancel("Operation cancelled.");
+    return;
+  }
+
+  // Generate secure secret for BETTER_AUTH_SECRET
+  const betterAuthSecret = generateSecureRandomString(32);
+
+  // Prompt for NEXT_PUBLIC_AUTH_URL
+  const defaultAuthUrl = "http://localhost:3000";
+  const authUrl = await prompt(
+    "Enter your public auth URL (use your production URL for deployment)",
+    defaultAuthUrl
+  );
+
+  // Update wrangler.toml vars section
+  wranglerToml = {
+    ...wranglerToml,
+    vars: {
+      ...(wranglerToml.vars as toml.JsonMap),
+      BETTER_AUTH_SECRET: betterAuthSecret,
+      NEXT_PUBLIC_AUTH_URL: authUrl,
+    },
+  };
+
+  try {
+    const updatedToml = toml.stringify(wranglerToml);
+    fs.writeFileSync(wranglerTomlPath, updatedToml);
+    console.log(
+      "\x1b[33mEnvironment variables updated in wrangler.toml\x1b[0m"
+    );
+  } catch (error) {
+    console.error("\x1b[31mError updating wrangler.toml:", error, "\x1b[0m");
+    cancel("Operation cancelled.");
+  }
+
+  outro("Environment variables configured.");
 }
 
 // Function to run database migrations
@@ -359,9 +501,18 @@ async function main() {
       process.exit(1);
     }
 
+    try {
+      await createKVNamespace();
+    } catch (error) {
+      console.error("\x1b[31mError:", error, "\x1b[0m");
+      cancel("Operation cancelled.");
+      process.exit(1);
+    }
+
     await promptForGoogleClientCredentials();
-    console.log("\x1b[33mReady... Set... Launch\x1b[0m");
     await updateDevVarsWithSecret();
+    await configureWranglerEnvVars();
+    console.log("\x1b[33mReady... Set... Launch\x1b[0m");
     await runDatabaseMigrations(dbName);
 
     console.log(

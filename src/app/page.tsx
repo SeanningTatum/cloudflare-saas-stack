@@ -1,7 +1,7 @@
 
-import { DisplayHelloWorld } from "@/components/ai/display-hello-world";
 import { getThemeToggler } from "@/components/theme/get-theme-button";
-import { api } from "@/trpc/server";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default async function Page() {
 	const SetThemeButton = getThemeToggler();
@@ -11,8 +11,6 @@ export default async function Page() {
 		<main className="flex flex-col items-center justify-center min-h-screen">
 			<div className="flex max-w-2xl justify-between w-full">
 				<SetThemeButton />
-
-				<DisplayHelloWorld />
 
 				<div className="flex gap-2 items-center justify-center">
 					{" "}
@@ -71,6 +69,10 @@ export default async function Page() {
 						... best part: everything&apos;s already set up for you. Just code!
 					</li>
 				</ul>
+
+				<Link href="/login">
+					<Button className="mt-4">Login</Button>
+				</Link>
 			</div>
 		</main>
 	);
