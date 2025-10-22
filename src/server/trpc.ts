@@ -4,6 +4,7 @@ import superjson from "superjson";
 import { getAuth } from "@/server/auth";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { getDb } from "./db";
+import { inngest } from "./inngest/client";
 
 /**
  * Creates the tRPC context with better-auth session
@@ -40,6 +41,7 @@ export const createTRPCContext = cache(async (opts?: { req: Request }) => {
     auth,
     ai: env.AI,
     db,
+    inngest,
   };
 });
 

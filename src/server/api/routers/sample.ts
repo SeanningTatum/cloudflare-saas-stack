@@ -4,7 +4,7 @@ import {
   protectedProcedure,
 } from "@/server/trpc";
 import { z } from "zod";
-import { getHelloWorld } from "../repositories/ai";
+import { getHelloWorld } from "../../repositories/ai";
 
 export const sampleRouter = createTRPCRouter({
   hello: baseProcedure
@@ -31,4 +31,22 @@ export const sampleRouter = createTRPCRouter({
       userId: ctx.user.id,
     };
   }),
+
+  // Call background task from inngest by sending an event
+  callBackgroundTask: baseProcedure
+    .input(
+      z.object({
+        taskId: z.string(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      await ctx.inngest.send({
+        name: "test/hello.background-task",
+        data: { taskId: input.taskId },
+      });
+
+      return {
+        message: "Background task called",
+      };
+    }),
 });

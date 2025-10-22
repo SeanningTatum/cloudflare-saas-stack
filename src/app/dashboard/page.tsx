@@ -5,6 +5,7 @@ import { api } from "@/trpc/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { CallInngestBackgroundButton } from "@/components/call-inngest-background";
 
 
 export default async function DashboardPage() {
@@ -25,6 +26,7 @@ export default async function DashboardPage() {
         <Link href="/dashboard/upload">
           <Button variant="outline">Try R2 Upload</Button>
         </Link>
+        <CallInngestBackgroundButton />
       </div>
 
     </div>
