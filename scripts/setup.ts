@@ -6,6 +6,14 @@ import { default as path } from "node:path";
 import { cancel, intro, outro, select, spinner, text } from "@clack/prompts";
 import { default as toml } from "@iarna/toml";
 
+// Function to sanitize resource names (lowercase, alphanumeric, and dashes)
+function sanitizeResourceName(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/\s+/g, "-") // Replace spaces with dashes
+    .replace(/[^a-z0-9-]/g, ""); // Remove non-alphanumeric chars except dashes
+}
+
 // Function to execute shell commands
 function executeCommand(command: string) {
   console.log(`\x1b[33m${command}\x1b[0m`);
@@ -103,8 +111,14 @@ let kvNamespaceName: string;
 // Function to create database and update wrangler.toml
 async function createDatabaseAndConfigure() {
   intro(`Let's set up your database...`);
-  const defaultDBName = `${path.basename(process.cwd())}-db`;
-  dbName = await prompt("Enter the name of your database", defaultDBName);
+  const defaultDBName = sanitizeResourceName(
+    `${path.basename(process.cwd())}-db`
+  );
+  const userInput = await prompt(
+    "Enter the name of your database",
+    defaultDBName
+  );
+  dbName = sanitizeResourceName(userInput);
 
   let databaseID: string;
 
@@ -196,11 +210,14 @@ async function createBucketR2() {
   }
 
   const bucketR2Spinner = spinner();
-  const defaultBucketName = `${path.basename(process.cwd())}-bucket`;
-  bucketR2Name = await prompt(
+  const defaultBucketName = sanitizeResourceName(
+    `${path.basename(process.cwd())}-bucket`
+  );
+  const userInput = await prompt(
     "Enter the name of your bucket",
     defaultBucketName
   );
+  bucketR2Name = sanitizeResourceName(userInput);
   bucketR2Spinner.start("Creating bucket...");
   executeCommand(`wrangler r2 bucket create ${bucketR2Name}`);
   bucketR2Spinner.stop("Bucket created.");
@@ -241,15 +258,18 @@ async function createKVNamespace() {
   }
 
   const kvSpinner = spinner();
-  const defaultKVName = `${path.basename(process.cwd())}-kv`;
-  kvNamespaceName = await prompt(
+  const defaultKVName = sanitizeResourceName(
+    `${path.basename(process.cwd())}-kv`
+  );
+  const userInput = await prompt(
     "Enter the name of your KV namespace",
     defaultKVName
   );
+  kvNamespaceName = sanitizeResourceName(userInput);
   kvSpinner.start("Creating KV namespace...");
 
   const kvOutput = executeCommand(
-    `wrangler kv:namespace create ${kvNamespaceName}`
+    `wrangler kv namespace create ${kvNamespaceName}`
   );
 
   let namespaceId: string;
