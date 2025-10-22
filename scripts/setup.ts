@@ -110,6 +110,30 @@ let kvNamespaceName: string;
 
 // Function to create database and update wrangler.toml
 async function createDatabaseAndConfigure() {
+  const wranglerTomlPath = path.join(__dirname, "..", "wrangler.toml");
+  let wranglerToml: toml.JsonMap;
+
+  try {
+    const wranglerTomlContent = fs.readFileSync(wranglerTomlPath, "utf-8");
+    wranglerToml = toml.parse(wranglerTomlContent);
+  } catch (error) {
+    console.error("\x1b[31mError reading wrangler.toml:", error, "\x1b[0m");
+    cancel("Operation cancelled.");
+    return;
+  }
+
+  // Check if D1 database is already configured
+  if (
+    wranglerToml.d1_databases &&
+    Array.isArray(wranglerToml.d1_databases) &&
+    wranglerToml.d1_databases.length > 0
+  ) {
+    const existingDb = wranglerToml.d1_databases[0] as any;
+    dbName = existingDb.database_name;
+    console.log("\x1b[32m✓ D1 Database already configured:", dbName, "\x1b[0m");
+    return;
+  }
+
   intro(`Let's set up your database...`);
   const defaultDBName = sanitizeResourceName(
     `${path.basename(process.cwd())}-db`
@@ -121,17 +145,6 @@ async function createDatabaseAndConfigure() {
   dbName = sanitizeResourceName(userInput);
 
   let databaseID: string;
-
-  const wranglerTomlPath = path.join(__dirname, "..", "wrangler.toml");
-  let wranglerToml: toml.JsonMap;
-
-  try {
-    const wranglerTomlContent = fs.readFileSync(wranglerTomlPath, "utf-8");
-    wranglerToml = toml.parse(wranglerTomlContent);
-  } catch (error) {
-    console.error("\x1b[31mError reading wrangler.toml:", error, "\x1b[0m");
-    cancel("Operation cancelled.");
-  }
 
   // Run command to create a new database
   const creationOutput = executeCommand(`bunx wrangler d1 create ${dbName}`);
@@ -207,6 +220,23 @@ async function createBucketR2() {
   } catch (error) {
     console.error("\x1b[31mError reading wrangler.toml:", error, "\x1b[0m");
     cancel("Operation cancelled.");
+    return;
+  }
+
+  // Check if R2 bucket is already configured
+  if (
+    wranglerToml.r2_buckets &&
+    Array.isArray(wranglerToml.r2_buckets) &&
+    wranglerToml.r2_buckets.length > 0
+  ) {
+    const existingBucket = wranglerToml.r2_buckets[0] as any;
+    bucketR2Name = existingBucket.bucket_name;
+    console.log(
+      "\x1b[32m✓ R2 Bucket already configured:",
+      bucketR2Name,
+      "\x1b[0m"
+    );
+    return;
   }
 
   const bucketR2Spinner = spinner();
@@ -255,6 +285,22 @@ async function createKVNamespace() {
   } catch (error) {
     console.error("\x1b[31mError reading wrangler.toml:", error, "\x1b[0m");
     cancel("Operation cancelled.");
+    return;
+  }
+
+  // Check if KV namespace is already configured
+  if (
+    wranglerToml.kv_namespaces &&
+    Array.isArray(wranglerToml.kv_namespaces) &&
+    wranglerToml.kv_namespaces.length > 0
+  ) {
+    const existingKV = wranglerToml.kv_namespaces[0] as any;
+    console.log(
+      "\x1b[32m✓ KV Namespace already configured with ID:",
+      existingKV.id,
+      "\x1b[0m"
+    );
+    return;
   }
 
   const kvSpinner = spinner();
