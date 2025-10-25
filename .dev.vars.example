@@ -1,0 +1,13 @@
+# Cloudflare Workers Local Development Environment Variables
+# Copy this file to .dev.vars and fill in your actual values
+# Run 'bun run setup' to automatically generate this file
+
+# Authentication secrets (for Cloudflare Workers)
+AUTH_GOOGLE_ID=
+AUTH_GOOGLE_SECRET=
+BETTER_AUTH_SECRET=
+
+# Inngest secrets (for background jobs)
+INNGEST_EVENT_KEY=
+INNGEST_SIGNING_KEY=
+

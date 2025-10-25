@@ -10,8 +10,8 @@ export const env = createEnv({
     BETTER_AUTH_SECRET: z.string(),
     INNGEST_EVENT_KEY: z.string(),
     INNGEST_SIGNING_KEY: z.string(),
-    // AUTH_GOOGLE_ID: z.string().optional().default(""),
-    // AUTH_GOOGLE_SECRET: z.string().optional().default(""),
+    AUTH_GOOGLE_ID: z.string().optional().nullable(),
+    AUTH_GOOGLE_SECRET: z.string().optional().nullable(),
   },
   /*
    * Environment variables available on the client (and server).
@@ -27,8 +27,8 @@ export const env = createEnv({
    */
   runtimeEnv: {
     BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
-    // AUTH_GOOGLE_ID: process.env.AUTH_GOOGLE_ID,
-    // AUTH_GOOGLE_SECRET: process.env.AUTH_GOOGLE_SECRET,
+    AUTH_GOOGLE_ID: process.env.AUTH_GOOGLE_ID,
+    AUTH_GOOGLE_SECRET: process.env.AUTH_GOOGLE_SECRET,
     INNGEST_EVENT_KEY: process.env.INNGEST_EVENT_KEY,
     INNGEST_SIGNING_KEY: process.env.INNGEST_SIGNING_KEY,
   },

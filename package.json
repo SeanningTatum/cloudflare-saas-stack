@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "bun run db:migrate:local && next dev",
-    "dev:inngest": "npx inngest-cli@latest dev -u http://localhost:3000/api/inngest",
+    "dev:inngest": "inngest-cli dev",
     "build": "next build",
     "build:cloudflare": "opennextjs-cloudflare build",
     "start": "next start",
@@ -22,7 +22,7 @@
     "db:migrate:prod": "NODE_ENV=production drizzle-kit migrate",
     "db:studio:dev": "drizzle-kit studio",
     "db:studio:prod": "NODE_ENV=production drizzle-kit studio",
-    "setup": "bun run scripts/setup.ts",
+    "setup": "bun run scripts/first-time-setup.ts",
     "secrets": "bun run scripts/manage-secrets.ts"
   },
   "dependencies": {
@@ -48,7 +48,7 @@
     "drizzle-orm": "^0.33.0",
     "global": "^4.4.0",
     "inngest": "^3.44.3",
-    "inngest-cli": "^1.12.1",
+    "inngest-cli": "latest",
     "lucide-react": "^0.438.0",
     "next": "14.2.5",
     "react": "^18",
@@ -75,5 +75,8 @@
     "vercel": "^37.3.0",
     "vitest": "^3.2.4",
     "wrangler": "4"
-  }
+  },
+  "trustedDependencies": [
+    "inngest-cli"
+  ]
 }

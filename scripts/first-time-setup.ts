@@ -125,7 +125,12 @@ function createWranglerToml(
 
   const tomlContent =
     "# Secrets are managed via 'wrangler secret put' or 'bun run secrets'\n" +
-    "# Required secrets: BETTER_AUTH_SECRET, AUTH_GOOGLE_ID, AUTH_GOOGLE_SECRET, AUTH_SECRET\n" +
+    "# Required secrets:\n" +
+    "#   - BETTER_AUTH_SECRET (authentication)\n" +
+    "#   - AUTH_GOOGLE_ID (optional - Google OAuth)\n" +
+    "#   - AUTH_GOOGLE_SECRET (optional - Google OAuth)\n" +
+    "#   - INNGEST_EVENT_KEY (background jobs)\n" +
+    "#   - INNGEST_SIGNING_KEY (background jobs)\n" +
     toml.stringify(tomlConfig as toml.JsonMap);
   fs.writeFileSync(wranglerTomlPath, tomlContent);
   console.log("\x1b[32m✓ Created wrangler.toml\x1b[0m");
@@ -294,6 +299,8 @@ async function setupAuthentication(): Promise<{
   googleSecret: string;
   authSecret: string;
   betterAuthSecret: string;
+  inngestEventKey: string;
+  inngestSigningKey: string;
 }> {
   console.log("\n\x1b[36m🔐 Setting up authentication...\x1b[0m");
   console.log(
@@ -312,10 +319,20 @@ async function setupAuthentication(): Promise<{
   // Generate secure secrets
   const authSecret = generateSecureRandomString(32);
   const betterAuthSecret = generateSecureRandomString(32);
+  const inngestEventKey = generateSecureRandomString(64);
+  const inngestSigningKey = `signkey-prod-${generateSecureRandomString(64)}`;
 
   console.log("\x1b[32m✓ Generated secure auth secrets\x1b[0m");
+  console.log("\x1b[32m✓ Generated Inngest credentials\x1b[0m");
 
-  return { googleId, googleSecret, authSecret, betterAuthSecret };
+  return {
+    googleId,
+    googleSecret,
+    authSecret,
+    betterAuthSecret,
+    inngestEventKey,
+    inngestSigningKey,
+  };
 }
 
 // Function to create .dev.vars file
@@ -323,7 +340,9 @@ function createDevVarsFile(
   googleId: string,
   googleSecret: string,
   authSecret: string,
-  betterAuthSecret: string
+  betterAuthSecret: string,
+  inngestEventKey: string,
+  inngestSigningKey: string
 ) {
   const devVarsPath = path.join(__dirname, "..", ".dev.vars");
 
@@ -333,15 +352,45 @@ function createDevVarsFile(
   }
 
   const content = [
+    `# Authentication secrets (for Cloudflare Workers)`,
     `AUTH_GOOGLE_ID=${googleId}`,
     `AUTH_GOOGLE_SECRET=${googleSecret}`,
-    `AUTH_SECRET=${authSecret}`,
     `BETTER_AUTH_SECRET=${betterAuthSecret}`,
+    ``,
+    `# Inngest secrets (for background jobs)`,
+    `INNGEST_EVENT_KEY=${inngestEventKey}`,
+    `INNGEST_SIGNING_KEY=${inngestSigningKey}`,
+    ``,
+    `# Public variables (accessible to Next.js client)`,
+    `NEXT_PUBLIC_AUTH_URL=http://localhost:3000`,
     "",
   ].join("\n");
 
   fs.writeFileSync(devVarsPath, content);
   console.log("\x1b[32m✓ Created .dev.vars file\x1b[0m");
+}
+
+// Function to create .env.local file for Next.js
+function createEnvLocalFile() {
+  const envLocalPath = path.join(__dirname, "..", ".env.local");
+
+  if (fs.existsSync(envLocalPath)) {
+    console.log("\x1b[33m⚠ .env.local already exists, skipping...\x1b[0m");
+    return;
+  }
+
+  const content = [
+    `# Next.js Public Environment Variables`,
+    `# These are accessible in the browser via process.env.NEXT_PUBLIC_*`,
+    `NEXT_PUBLIC_AUTH_URL=http://localhost:3000`,
+    ``,
+    `# For production, update NEXT_PUBLIC_AUTH_URL to your actual domain`,
+    `# Example: NEXT_PUBLIC_AUTH_URL=https://your-domain.com`,
+    "",
+  ].join("\n");
+
+  fs.writeFileSync(envLocalPath, content);
+  console.log("\x1b[32m✓ Created .env.local file\x1b[0m");
 }
 
 // Function to run database migrations
@@ -484,10 +533,24 @@ async function main() {
 
   // Step 3: Set up authentication
   console.log("\n\x1b[36m🔐 Step 3: Authentication Setup\x1b[0m");
-  const { googleId, googleSecret, authSecret, betterAuthSecret } =
-    await setupAuthentication();
+  const {
+    googleId,
+    googleSecret,
+    authSecret,
+    betterAuthSecret,
+    inngestEventKey,
+    inngestSigningKey,
+  } = await setupAuthentication();
 
-  createDevVarsFile(googleId, googleSecret, authSecret, betterAuthSecret);
+  createDevVarsFile(
+    googleId,
+    googleSecret,
+    authSecret,
+    betterAuthSecret,
+    inngestEventKey,
+    inngestSigningKey
+  );
+  createEnvLocalFile();
 
   // Step 4: Create configuration files
   console.log("\n\x1b[36m📝 Step 4: Creating Configuration Files\x1b[0m");
@@ -517,8 +580,9 @@ async function main() {
     console.log("\n\x1b[36mDeploying secrets...\x1b[0m");
     await uploadSecret("AUTH_GOOGLE_ID", googleId);
     await uploadSecret("AUTH_GOOGLE_SECRET", googleSecret);
-    await uploadSecret("AUTH_SECRET", authSecret);
     await uploadSecret("BETTER_AUTH_SECRET", betterAuthSecret);
+    await uploadSecret("INNGEST_EVENT_KEY", inngestEventKey);
+    await uploadSecret("INNGEST_SIGNING_KEY", inngestSigningKey);
     secretsDeployed = true;
   } else {
     console.log(
