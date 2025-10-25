@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import "./globals.css";
-import { ThemeScript } from "@/components/theme/theme-script";
 import { TRPCProvider } from "@/trpc/client";
+import { ThemeProvider } from "@/components/theme-provider";
+
+import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -17,12 +18,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <head>
-        <ThemeScript />
-      </head>
+    <html lang="en" suppressHydrationWarning>
       <TRPCProvider>
-        <body className={inter.className}>{children}</body>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {children}
+        </ThemeProvider>
       </TRPCProvider>
     </html>
   );
