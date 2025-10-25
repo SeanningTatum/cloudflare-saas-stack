@@ -21,23 +21,62 @@ Supermemory now has 20k+ users and it runs on $5/month. safe to say, it's _very_
 
 ## Getting Started
 
-1. Make sure that you have [Wrangler](https://developers.cloudflare.com/workers/wrangler/install-and-update/#installupdate-wrangler) installed. And also that you have logged in with `wrangler login` (You'll need a Cloudflare account)
+### Quick Start (Recommended)
 
-2. Clone the repository and install dependencies:
+1. Clone the repository and install dependencies:
    ```bash
    git clone https://github.com/Dhravya/cloudflare-saas-stack
    cd cloudflare-saas-stack
    npm i -g bun
    bun install
+   ```
+
+2. Make sure you have [Wrangler](https://developers.cloudflare.com/workers/wrangler/install-and-update/#installupdate-wrangler) installed and logged in:
+   ```bash
+   wrangler login
+   ```
+
+3. Run the one-time setup script:
+   ```bash
    bun run setup
    ```
 
-3. Run the development server:
+   This single command will:
+   - Prompt you for your project name (used to generate all resource names)
+   - Create Cloudflare resources (D1 database, R2 bucket, optional KV namespace)
+   - Build your `wrangler.toml` configuration file automatically
+   - Configure authentication (Google OAuth)
+   - Generate and apply database migrations
+   - Optionally deploy secrets to production
+   - Optionally build and deploy your worker to Cloudflare (if secrets were deployed)
+
+4. Run the development server:
    ```bash
    bun run dev
    ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+### What Happens During Setup?
+
+When you run `bun run setup`, it:
+
+1. Prompts for your project name (e.g., "my-saas-app")
+2. Generates resource names:
+   - Project: `my-saas-app`
+   - Database: `my-saas-app-db`
+   - Bucket: `my-saas-app-bucket`
+3. Creates these resources in Cloudflare
+4. **Builds your `wrangler.toml` file** from scratch with all the correct values
+5. Updates `package.json` with your database name
+6. Sets up authentication credentials in `.dev.vars`
+7. Runs database migrations
+
+After setup completes, your configuration files are ready to use with no manual editing required!
+
+**Note**: The repository doesn't include a `wrangler.toml` file (it's in `.gitignore`). This means you can run `wrangler login` without any issues before running setup. The setup script will create your personalized `wrangler.toml` automatically.
+
+**Pro Tip**: If you choose to deploy secrets during setup, you'll be prompted to also build and deploy your worker immediately. This means you can go from clone to deployed in just one command! 🚀
 
 ## Cloudflare Integration
 
@@ -47,6 +86,48 @@ The application uses [`@opennextjs/cloudflare`](https://opennext.js.org/cloudfla
 - `cf-typegen`: Generate TypeScript types for Cloudflare bindings
 
 > __Note:__ While the `dev` script is optimal for local development, you should preview your application periodically to ensure it works properly in the Cloudflare Workers environment.
+
+## Deploying to Production
+
+After completing the initial setup, deploying to production is straightforward:
+
+1. If you skipped secret deployment during setup, you can deploy them anytime:
+   
+   The setup script already handled secret deployment if you confirmed during setup. If you need to update secrets later:
+   
+   - Modify your `.dev.vars` file
+   - Use the secrets management tool: `bun run secrets`
+   - Or manually deploy: `echo "YOUR_SECRET_VALUE" | wrangler secret put SECRET_NAME`
+
+2. Deploy your application:
+   ```bash
+   bun run deploy
+   ```
+
+### What secrets are used?
+
+Your application uses these secrets from `.dev.vars`:
+- `AUTH_GOOGLE_ID`: Google OAuth Client ID
+- `AUTH_GOOGLE_SECRET`: Google OAuth Client Secret
+- `AUTH_SECRET`: Secure random string for auth (auto-generated during setup)
+- `BETTER_AUTH_SECRET`: Another secure random string (auto-generated during setup)
+
+These secrets are stored securely in Cloudflare Workers and are not visible in your `wrangler.toml` file.
+
+For a detailed deployment guide, see [DEPLOYMENT.md](./DEPLOYMENT.md).
+
+## Managing Secrets
+
+Use the interactive secrets management tool:
+
+```bash
+bun run secrets
+```
+
+This allows you to:
+- List all deployed secrets
+- Delete specific secrets
+- Bulk delete all secrets (use with caution!)
 
 ## Bindings
 
@@ -109,8 +190,7 @@ If you prefer manual setup:
 2. Create a D1 database: `bunx wrangler d1 create ${dbName}`
 3. Create a `.dev.vars` file in the project root with your Better Auth credentials and OAuth providers.
    1. `BETTER_AUTH_SECRET`, generate by command `openssl rand -base64 32`
-   2. `BETTER_AUTH_URL` - set to `http://localhost:3000` for local development
-   3. `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` for Google OAuth.
+   2. `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` for Google OAuth.
       1. First create [OAuth consent screen](https://console.cloud.google.com/apis/credentials/consent). Tips: no wait time if you skip logo upload.
       2. Create [credential](https://console.cloud.google.com/apis/credentials). Put `https://your-domain` and `http://localhost:3000` at "Authorized JavaScript origins". Put `https://your-domain/api/auth/callback/google` and `http://localhost:3000/api/auth/callback/google` at "Authorized redirect URIs".
 4. Generate db migration files: `bun run db:generate`
@@ -128,3 +208,12 @@ If you prefer manual setup:
 
 Just change your Cloudflare account ID in the project settings, and you're good to go!
 
+## Quick Links
+
+- 📋 [Commands Reference](./COMMANDS.md) - Complete list of all available commands
+- 🚀 [Deployment Guide](./DEPLOYMENT.md) - Detailed deployment instructions
+- 💡 [Main README](./README.md) - You are here!
+
+
+# Todo
+- Upgrade tailwind

@@ -1,7 +1,11 @@
-name = "awesome-project-idea"
+# Cloudflare Worker Configuration Example
+# This file is a reference template. The actual wrangler.toml is generated during setup.
+# Run "bun run setup" to create your wrangler.toml file automatically.
+
+name = "my-project-name"
 main = ".open-next/worker.js"
 compatibility_date = "2025-03-25"
-compatibility_flags = [ "nodejs_compat" ]
+compatibility_flags = ["nodejs_compat"]
 
 [assets]
 directory = ".open-next/assets"
@@ -9,6 +13,7 @@ binding = "ASSETS"
 
 # Secrets are managed via 'wrangler secret put' or 'bun run secrets'
 # Required secrets: BETTER_AUTH_SECRET, AUTH_GOOGLE_ID, AUTH_GOOGLE_SECRET, AUTH_SECRET
+# Add public environment variables here if needed
 [vars]
 
 [placement]
@@ -16,19 +21,21 @@ mode = "smart"
 
 [[d1_databases]]
 binding = "DATABASE"
-database_name = "awesome-project-idea-db"
-database_id = "262de30a-85c0-4bc9-acb5-44ff9af22e4c"
+database_name = "my-project-db"
+database_id = "your-database-id-here"
 migrations_dir = "./drizzle"
 
 [[r2_buckets]]
 binding = "BUCKET"
-bucket_name = "awesome-project-idea-bucket"
+bucket_name = "my-project-bucket"
 
 [ai]
 binding = "AI"
 
+[observability]
 [observability.logs]
 enabled = true
 head_sampling_rate = 1
 invocation_logs = true
 persist = true
+

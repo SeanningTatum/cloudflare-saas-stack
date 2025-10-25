@@ -19,7 +19,7 @@ async function createBetterAuthInstance() {
       enabled: true,
     },
     secret: env.BETTER_AUTH_SECRET,
-    baseURL: env.NEXT_PUBLIC_AUTH_URL || "http://localhost:3000",
+    // baseURL: env.NEXT_PUBLIC_AUTH_URL || "http://localhost:3000",
   });
 }
 

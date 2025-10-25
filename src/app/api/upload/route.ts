@@ -8,8 +8,6 @@ import {
 } from "@/lib/constants";
 import { generateFileKey } from "@/lib/utils";
 
-export const runtime = "edge";
-
 export async function POST(request: NextRequest) {
   try {
     const user = await getCurrentUser();

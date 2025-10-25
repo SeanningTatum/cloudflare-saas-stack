@@ -2,8 +2,8 @@
 // by running `wrangler types --env-interface CloudflareEnv env.d.ts`
 
 interface CloudflareEnv {
-	AUTH_GOOGLE_ID: string;
-	AUTH_GOOGLE_SECRET: string;
-	BETTER_AUTH_SECRET: string;
-	DATABASE: D1Database;
+  AUTH_GOOGLE_ID: string;
+  AUTH_GOOGLE_SECRET: string;
+  BETTER_AUTH_SECRET: string;
+  DATABASE: D1Database;
 }

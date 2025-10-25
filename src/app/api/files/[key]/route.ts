@@ -3,8 +3,6 @@ import { getFromR2 } from "@/lib/bucket";
 import { getCurrentUser } from "@/lib/auth/auth-server";
 import { UPLOAD_PATH_PREFIX } from "@/lib/constants";
 
-export const runtime = "edge";
-
 interface RouteParams {
   params: Promise<{
     key: string;
