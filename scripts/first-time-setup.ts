@@ -80,7 +80,9 @@ function createWranglerToml(
   projectName: string,
   dbName: string,
   dbId: string,
-  bucketName: string
+  bucketName: string,
+  googleId: string,
+  googleSecret: string
 ) {
   const wranglerTomlPath = path.join(__dirname, "..", "wrangler.toml");
 
@@ -123,15 +125,19 @@ function createWranglerToml(
     },
   };
 
+  let secretsSection =
+    "# [secrets]\n" +
+    "# BETTER_AUTH_SECRET\n" +
+    "# INNGEST_EVENT_KEY\n" +
+    "# INNGEST_SIGNING_KEY\n";
+
+  // Only add Google OAuth secrets if they were provided
+  if (googleId && googleSecret) {
+    secretsSection += "# AUTH_GOOGLE_ID\n" + "# AUTH_GOOGLE_SECRET\n";
+  }
+
   const tomlContent =
-    "# Secrets are managed via 'wrangler secret put' or 'bun run secrets'\n" +
-    "# Required secrets:\n" +
-    "#   - BETTER_AUTH_SECRET (authentication)\n" +
-    "#   - AUTH_GOOGLE_ID (optional - Google OAuth)\n" +
-    "#   - AUTH_GOOGLE_SECRET (optional - Google OAuth)\n" +
-    "#   - INNGEST_EVENT_KEY (background jobs)\n" +
-    "#   - INNGEST_SIGNING_KEY (background jobs)\n" +
-    toml.stringify(tomlConfig as toml.JsonMap);
+    secretsSection + "\n" + toml.stringify(tomlConfig as toml.JsonMap);
   fs.writeFileSync(wranglerTomlPath, tomlContent);
   console.log("\x1b[32m✓ Created wrangler.toml\x1b[0m");
 }
@@ -556,7 +562,14 @@ async function main() {
   console.log("\n\x1b[36m📝 Step 4: Creating Configuration Files\x1b[0m");
 
   // Create wrangler.toml from scratch
-  createWranglerToml(projectName, dbName, dbId, bucketName);
+  createWranglerToml(
+    projectName,
+    dbName,
+    dbId,
+    bucketName,
+    googleId,
+    googleSecret
+  );
 
   // Update package.json with database name
   const packageJsonPath = path.join(__dirname, "..", "package.json");
