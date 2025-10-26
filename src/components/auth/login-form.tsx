@@ -38,7 +38,7 @@ export function LoginForm() {
         setError(result.error.message || "Failed to sign in")
       } else {
         // Successfully signed in
-        router.push("/dashboard")
+        router.push("/home")
         router.refresh()
       }
     } catch (err) {
