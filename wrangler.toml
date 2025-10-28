@@ -1,0 +1,30 @@
+name = "create-admin-panel"
+main = ".open-next/worker.js"
+compatibility_date = "2025-03-25"
+compatibility_flags = [ "nodejs_compat" ]
+
+[assets]
+directory = ".open-next/assets"
+binding = "ASSETS"
+
+[placement]
+mode = "smart"
+
+[[d1_databases]]
+binding = "DATABASE"
+database_name = "create-admin-panel-db"
+database_id = "a9365c3a-5881-4ec5-a6a6-ac248f415746"
+migrations_dir = "./drizzle"
+
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "create-admin-panel-bucket"
+
+[ai]
+binding = "AI"
+
+[observability.logs]
+enabled = true
+head_sampling_rate = 1
+invocation_logs = true
+persist = true
