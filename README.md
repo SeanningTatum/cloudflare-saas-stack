@@ -208,12 +208,4 @@ If you prefer manual setup:
 
 Just change your Cloudflare account ID in the project settings, and you're good to go!
 
-## Quick Links
 
-- 📋 [Commands Reference](./COMMANDS.md) - Complete list of all available commands
-- 🚀 [Deployment Guide](./DEPLOYMENT.md) - Detailed deployment instructions
-- 💡 [Main README](./README.md) - You are here!
-
-
-# Todo
-- Upgrade tailwind

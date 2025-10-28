@@ -14,7 +14,6 @@ import {
 } from "@clack/prompts";
 import { default as toml } from "@iarna/toml";
 
-// Function to sanitize resource names (lowercase, alphanumeric, and dashes)
 function sanitizeResourceName(name: string): string {
   return name
     .toLowerCase()
@@ -22,7 +21,6 @@ function sanitizeResourceName(name: string): string {
     .replace(/[^a-z0-9-]/g, ""); // Remove non-alphanumeric chars except dashes
 }
 
-// Function to execute shell commands
 function executeCommand(command: string, silent = false) {
   if (!silent) {
     console.log(`\x1b[33m${command}\x1b[0m`);
@@ -37,7 +35,6 @@ function executeCommand(command: string, silent = false) {
   }
 }
 
-// Function to prompt user for input
 async function prompt(message: string, defaultValue: string): Promise<string> {
   return (await text({
     message: `${message}:`,
@@ -46,7 +43,6 @@ async function prompt(message: string, defaultValue: string): Promise<string> {
   })) as string;
 }
 
-// Function to generate secure random string
 function generateSecureRandomString(length: number): string {
   return crypto
     .randomBytes(Math.ceil(length / 2))
@@ -54,7 +50,6 @@ function generateSecureRandomString(length: number): string {
     .slice(0, length);
 }
 
-// Function to replace handlebars placeholders in a file
 function replaceHandlebarsInFile(
   filePath: string,
   replacements: Record<string, string>
@@ -75,7 +70,6 @@ function replaceHandlebarsInFile(
   console.log(`\x1b[32m✓ Updated ${path.basename(filePath)}\x1b[0m`);
 }
 
-// Function to create wrangler.toml from scratch
 function createWranglerToml(
   projectName: string,
   dbName: string,
@@ -142,7 +136,6 @@ function createWranglerToml(
   console.log("\x1b[32m✓ Created wrangler.toml\x1b[0m");
 }
 
-// Function to extract account IDs from `wrangler whoami` output
 function extractAccountDetails(output: string): { name: string; id: string }[] {
   const lines = output.split("\n");
   const accountDetails: { name: string; id: string }[] = [];
@@ -168,7 +161,6 @@ function extractAccountDetails(output: string): { name: string; id: string }[] {
   return accountDetails;
 }
 
-// Function to prompt for account ID if there are multiple accounts
 async function promptForAccountId(
   accounts: { name: string; id: string }[]
 ): Promise<string> {
@@ -201,7 +193,6 @@ async function promptForAccountId(
   }
 }
 
-// Function to create D1 database
 async function createDatabase(dbName: string): Promise<string> {
   const dbSpinner = spinner();
   dbSpinner.start(`Creating D1 database: ${dbName}...`);
@@ -254,7 +245,6 @@ async function createDatabase(dbName: string): Promise<string> {
   process.exit(1);
 }
 
-// Function to create R2 bucket
 async function createBucket(bucketName: string): Promise<void> {
   const bucketSpinner = spinner();
   bucketSpinner.start(`Creating R2 bucket: ${bucketName}...`);
@@ -276,7 +266,6 @@ async function createBucket(bucketName: string): Promise<void> {
   }
 }
 
-// Function to create KV namespace (optional, for future use)
 async function createKVNamespace(kvName: string): Promise<void> {
   const kvSpinner = spinner();
   kvSpinner.start(`Creating KV namespace: ${kvName}...`);
@@ -299,7 +288,6 @@ async function createKVNamespace(kvName: string): Promise<void> {
   }
 }
 
-// Function to set up authentication credentials
 async function setupAuthentication(): Promise<{
   googleId: string;
   googleSecret: string;
@@ -341,7 +329,6 @@ async function setupAuthentication(): Promise<{
   };
 }
 
-// Function to create .dev.vars file
 function createDevVarsFile(
   googleId: string,
   googleSecret: string,
@@ -376,7 +363,6 @@ function createDevVarsFile(
   console.log("\x1b[32m✓ Created .dev.vars file\x1b[0m");
 }
 
-// Function to create .env.local file for Next.js
 function createEnvLocalFile() {
   const envLocalPath = path.join(__dirname, "..", ".env.local");
 
@@ -399,7 +385,6 @@ function createEnvLocalFile() {
   console.log("\x1b[32m✓ Created .env.local file\x1b[0m");
 }
 
-// Function to run database migrations
 async function runDatabaseMigrations(dbName: string) {
   console.log("\n\x1b[36m📦 Running database migrations...\x1b[0m");
 
@@ -422,7 +407,6 @@ async function runDatabaseMigrations(dbName: string) {
   remoteSpinner.stop("\x1b[32m✓ Remote migrations applied\x1b[0m");
 }
 
-// Function to upload secrets to Cloudflare Workers
 async function uploadSecret(secretName: string, secretValue: string) {
   if (!secretValue || secretValue === "") {
     console.log(`\x1b[33m⚠ Skipping ${secretName} (empty value)\x1b[0m`);
