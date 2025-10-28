@@ -8,12 +8,33 @@ async function configureAuth() {
   const betterAuthConfig: Omit<BetterAuthOptions, "database"> = {
     plugins: [
       admin({
-        adminUserIds: ["Nfzn4CWJQ4bFAUmp7S0THP4ciCxtpp2g"],
+        adminRoles: ["admin"],
       }),
     ],
     secret: env.BETTER_AUTH_SECRET,
     emailAndPassword: {
       enabled: true,
+    },
+    user: {
+      additionalFields: {
+        role: {
+          type: "string",
+          required: true,
+          defaultValue: "user",
+        },
+        banned: {
+          type: "boolean",
+          required: false,
+        },
+        banReason: {
+          type: "string",
+          required: false,
+        },
+        banExpires: {
+          type: "number",
+          required: false,
+        },
+      },
     },
   };
 

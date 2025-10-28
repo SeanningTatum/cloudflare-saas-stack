@@ -5,6 +5,9 @@ import { auth } from "@/server/auth";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { getDb } from "./db";
 import { inngest } from "./inngest/client";
+import type { User } from "better-auth";
+
+// Extended user type that includes our custom fields
 
 /**
  * Creates the tRPC context with better-auth session
@@ -15,31 +18,37 @@ export const createTRPCContext = cache(async (opts?: { req: Request }) => {
   const { env } = await getCloudflareContext({ async: true });
 
   let session = null;
-  let user = null;
+  let currentUser: User | null = null;
+  let headers: HeadersInit | undefined = undefined;
 
   if (opts?.req) {
+    headers = opts.req.headers;
     try {
       // Extract session from better-auth using the request
-      const sessionData = await auth.api.getSession({
+      const authSession = await auth.api.getSession({
         headers: opts.req.headers,
       });
-      if (sessionData) {
-        session = sessionData.session;
-        user = sessionData.user;
+
+      if (authSession?.user && authSession?.session) {
+        session = authSession.session;
+        // We can be sure that the cast is safe because of the plugin
+        // and schema in auth.ts and schema.ts
+        currentUser = authSession.user as unknown as User;
       }
     } catch (error) {
       // Session doesn't exist or is invalid
       session = null;
-      user = null;
+      currentUser = null;
     }
   }
 
   return {
-    session,
-    user,
     auth,
     ai: env.AI,
     db,
+    session,
+    user: currentUser,
+    headers,
     inngest,
   };
 });
@@ -73,6 +82,34 @@ export const protectedProcedure = t.procedure.use(async ({ ctx, next }) => {
   return next({
     ctx: {
       // Infers the `session` and `user` as non-nullable
+      session: ctx.session,
+      user: ctx.user,
+    },
+  });
+});
+
+/**
+ * Admin procedure that requires authentication AND admin role
+ * Throws UNAUTHORIZED error if user is not authenticated or not an admin
+ */
+export const adminProcedure = t.procedure.use(async ({ ctx, next }) => {
+  if (!ctx.session || !ctx.user) {
+    throw new TRPCError({
+      code: "UNAUTHORIZED",
+      message: "You must be logged in to access this resource",
+    });
+  }
+
+  if (ctx.user.role !== "admin") {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "You must be an admin to access this resource",
+    });
+  }
+
+  return next({
+    ctx: {
+      // Infers the `session` and `user` as non-nullable with admin role
       session: ctx.session,
       user: ctx.user,
     },
