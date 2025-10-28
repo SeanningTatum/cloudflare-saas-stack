@@ -8,8 +8,14 @@ export const env = createEnv({
    */
   server: {
     BETTER_AUTH_SECRET: z.string(),
-    INNGEST_EVENT_KEY: z.string(),
-    INNGEST_SIGNING_KEY: z.string(),
+    INNGEST_EVENT_KEY:
+      process.env.NODE_ENV === "development"
+        ? z.string().optional().nullable()
+        : z.string(),
+    INNGEST_SIGNING_KEY:
+      process.env.NODE_ENV === "development"
+        ? z.string().optional().nullable()
+        : z.string(),
     AUTH_GOOGLE_ID: z.string().optional().nullable(),
     AUTH_GOOGLE_SECRET: z.string().optional().nullable(),
   },

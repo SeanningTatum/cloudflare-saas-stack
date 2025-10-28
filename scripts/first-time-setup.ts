@@ -313,11 +313,28 @@ async function setupAuthentication(): Promise<{
   // Generate secure secrets
   const authSecret = generateSecureRandomString(32);
   const betterAuthSecret = generateSecureRandomString(32);
-  const inngestEventKey = generateSecureRandomString(64);
-  const inngestSigningKey = `signkey-prod-${generateSecureRandomString(64)}`;
 
   console.log("\x1b[32m✓ Generated secure auth secrets\x1b[0m");
-  console.log("\x1b[32m✓ Generated Inngest credentials\x1b[0m");
+
+  // Prompt for Inngest setup
+  console.log(
+    "\n\x1b[33mFor Inngest (background jobs), visit: https://www.inngest.com/\x1b[0m"
+  );
+  console.log(
+    "\x1b[33mCreate an account and paste your keys below (or press Enter to skip).\x1b[0m\n"
+  );
+
+  const inngestEventKey = await prompt("Inngest Event Key (Enter to skip)", "");
+  const inngestSigningKey = await prompt(
+    "Inngest Signing Key (Enter to skip)",
+    ""
+  );
+
+  if (inngestEventKey && inngestSigningKey) {
+    console.log("\x1b[32m✓ Inngest credentials provided\x1b[0m");
+  } else {
+    console.log("\x1b[33m⚠ Skipping Inngest setup\x1b[0m");
+  }
 
   return {
     googleId,
