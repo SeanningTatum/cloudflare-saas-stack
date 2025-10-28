@@ -1,31 +1,33 @@
-import { betterAuth } from "better-auth";
+import { betterAuth, BetterAuthOptions } from "better-auth";
 import { admin } from "better-auth/plugins";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { getCloudflareContext } from "@opennextjs/cloudflare";
-import { drizzle as drizzleD1 } from "drizzle-orm/d1";
-import * as schema from "@/server/db/schema";
+import { getDb } from "./db";
 import { env } from "@/env.mjs";
 
-// Lazy database getter for runtime resolution
-async function getDatabase() {
-  const { env } = await getCloudflareContext({ async: true });
-  if (!env.DATABASE) {
-    throw new Error("DATABASE binding not found");
+async function configureAuth() {
+  const betterAuthConfig: Omit<BetterAuthOptions, "database"> = {
+    plugins: [admin()],
+    secret: env.BETTER_AUTH_SECRET,
+    emailAndPassword: {
+      enabled: true,
+    },
+  };
+
+  if (env.IS_CLI) {
+    return betterAuth({
+      database: drizzleAdapter({} as D1Database, { provider: "sqlite" }),
+      ...betterAuthConfig,
+    });
   }
-  return drizzleD1(env.DATABASE, { schema, logger: true });
+
+  const db = await getDb();
+
+  return betterAuth({
+    database: drizzleAdapter(db, {
+      provider: "sqlite",
+    }),
+    ...betterAuthConfig,
+  });
 }
 
-// Create auth instance synchronously for Better Auth CLI
-const db = await getDatabase();
-
-export const auth = betterAuth({
-  database: drizzleAdapter(db, {
-    provider: "sqlite",
-  }),
-  emailAndPassword: {
-    enabled: true,
-  },
-  secret: env.BETTER_AUTH_SECRET,
-  plugins: [admin()],
-  // baseURL: process.env.NEXT_PUBLIC_AUTH_URL || "http://localhost:3000",
-});
+export const auth = await configureAuth();

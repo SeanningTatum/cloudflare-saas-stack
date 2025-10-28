@@ -18,6 +18,10 @@ export const env = createEnv({
         : z.string(),
     AUTH_GOOGLE_ID: z.string().optional().nullable(),
     AUTH_GOOGLE_SECRET: z.string().optional().nullable(),
+    IS_CLI: z
+      .string()
+      .transform((val) => val === "true")
+      .default(false),
   },
   /*
    * Environment variables available on the client (and server).
@@ -37,6 +41,7 @@ export const env = createEnv({
     AUTH_GOOGLE_SECRET: process.env.AUTH_GOOGLE_SECRET,
     INNGEST_EVENT_KEY: process.env.INNGEST_EVENT_KEY,
     INNGEST_SIGNING_KEY: process.env.INNGEST_SIGNING_KEY,
+    IS_CLI: process.env.IS_CLI,
   },
   skipValidation:
     !!process.env.SKIP_ENV_VALIDATION || process.env.NODE_ENV === "production",
