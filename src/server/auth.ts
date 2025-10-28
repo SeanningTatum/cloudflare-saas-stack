@@ -6,7 +6,11 @@ import { env } from "@/env.mjs";
 
 async function configureAuth() {
   const betterAuthConfig: Omit<BetterAuthOptions, "database"> = {
-    plugins: [admin()],
+    plugins: [
+      admin({
+        adminUserIds: ["Nfzn4CWJQ4bFAUmp7S0THP4ciCxtpp2g"],
+      }),
+    ],
     secret: env.BETTER_AUTH_SECRET,
     emailAndPassword: {
       enabled: true,

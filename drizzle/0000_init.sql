@@ -36,7 +36,7 @@ CREATE TABLE `user` (
 	`image` text,
 	`created_at` integer DEFAULT (cast(unixepoch('subsecond') * 1000 as integer)) NOT NULL,
 	`updated_at` integer DEFAULT (cast(unixepoch('subsecond') * 1000 as integer)) NOT NULL,
-	`role` text,
+	`role` text DEFAULT 'user' NOT NULL,
 	`banned` integer DEFAULT false,
 	`ban_reason` text,
 	`ban_expires` integer
