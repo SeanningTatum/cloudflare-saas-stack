@@ -1,11 +1,9 @@
-import { getAuth } from "@/server/auth";
+import { auth } from "@/server/auth";
 import { headers } from "next/headers";
 import { User } from "better-auth";
 import { redirect } from "next/navigation";
 
 export async function getCurrentUser(): Promise<User | null> {
-  const auth = await getAuth();
-
   const sessionData = await auth.api.getSession({
     headers: await headers(),
   });

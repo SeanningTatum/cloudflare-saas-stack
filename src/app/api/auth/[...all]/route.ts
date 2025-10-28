@@ -1,9 +1,8 @@
-import { getAuth } from "@/server/auth";
+import { auth } from "@/server/auth";
 import { toNextJsHandler } from "better-auth/next-js";
 
 // Create async handlers that properly initialize auth
 async function createHandler() {
-  const auth = await getAuth();
   return toNextJsHandler(auth.handler);
 }
 

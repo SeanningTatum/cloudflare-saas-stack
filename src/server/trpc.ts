@@ -1,7 +1,7 @@
 import { initTRPC, TRPCError } from "@trpc/server";
 import { cache } from "react";
 import superjson from "superjson";
-import { getAuth } from "@/server/auth";
+import { auth } from "@/server/auth";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { getDb } from "./db";
 import { inngest } from "./inngest/client";
@@ -11,7 +11,6 @@ import { inngest } from "./inngest/client";
  * @see: https://trpc.io/docs/server/context
  */
 export const createTRPCContext = cache(async (opts?: { req: Request }) => {
-  const auth = await getAuth();
   const db = await getDb();
   const { env } = await getCloudflareContext({ async: true });
 

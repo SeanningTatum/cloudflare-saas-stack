@@ -1,5 +1,6 @@
-// For OpenNext Cloudflare, dev platform setup is handled automatically
-// No additional setup needed in next.config.mjs
+import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
+
+await initOpenNextCloudflareForDev();
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
