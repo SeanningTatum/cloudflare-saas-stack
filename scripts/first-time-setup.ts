@@ -583,7 +583,7 @@ async function main() {
     secretsDeployed = true;
   } else {
     console.log(
-      "\x1b[33m⚠ Skipped secret deployment. Run 'bun run secrets' later to manage secrets.\x1b[0m"
+      "\x1b[33m⚠ Skipped secret deployment. Run 'wrangler secret put' later to manage secrets.\x1b[0m"
     );
   }
 

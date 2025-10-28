@@ -1,16 +1,15 @@
 
-import { getThemeToggler } from "@/components/theme/get-theme-button";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
 export default async function Page() {
-	const SetThemeButton = getThemeToggler();
 
 
 	return (
 		<main className="flex flex-col items-center justify-center min-h-screen">
 			<div className="flex max-w-2xl justify-between w-full">
-				<SetThemeButton />
+				<ThemeToggle />
 
 				<div className="flex gap-2 items-center justify-center">
 					{" "}

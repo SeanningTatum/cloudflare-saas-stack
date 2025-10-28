@@ -26,7 +26,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <body className={inter.className}>
+            {children}
+          </body>
         </ThemeProvider>
       </TRPCProvider>
     </html>
