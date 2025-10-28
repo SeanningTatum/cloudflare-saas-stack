@@ -20,8 +20,8 @@ export const env = createEnv({
     AUTH_GOOGLE_SECRET: z.string().optional().nullable(),
     IS_CLI: z
       .string()
-      .transform((val) => val === "true")
-      .default(false),
+      .optional()
+      .transform((val) => (val ? val === "true" : false)),
   },
   /*
    * Environment variables available on the client (and server).
