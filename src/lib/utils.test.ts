@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { sanitizeFilename, generateFileKey } from "./utils";
+import { sanitizeFilename, generateFileKey, getInitials, formatDate } from "./utils";
 
 describe("sanitizeFilename", () => {
   it("should keep alphanumeric characters, dots, and hyphens", () => {
@@ -158,5 +158,80 @@ describe("generateFileKey", () => {
     });
 
     expect(result).toBe(`/user123/${mockTimestamp}-${mockUUID}-test.txt`);
+  });
+});
+
+describe("getInitials", () => {
+  it("should return initials from a full name", () => {
+    expect(getInitials("John Doe")).toBe("JD");
+  });
+
+  it("should return initials from a single name", () => {
+    expect(getInitials("John")).toBe("J");
+  });
+
+  it("should return only first two initials from multiple names", () => {
+    expect(getInitials("John Michael Doe")).toBe("JM");
+  });
+
+  it("should handle names with extra spaces", () => {
+    expect(getInitials("John  Doe")).toBe("JD");
+  });
+
+  it("should convert initials to uppercase", () => {
+    expect(getInitials("john doe")).toBe("JD");
+  });
+
+  it("should handle single character names", () => {
+    expect(getInitials("J D")).toBe("JD");
+  });
+
+  it("should handle empty string", () => {
+    expect(getInitials("")).toBe("");
+  });
+
+  it("should handle names with leading/trailing spaces", () => {
+    expect(getInitials(" John Doe ")).toBe("JD");
+  });
+
+  it("should handle hyphenated names", () => {
+    expect(getInitials("Mary-Jane Watson")).toBe("MW");
+  });
+});
+
+describe("formatDate", () => {
+  it("should format a date correctly", () => {
+    const date = new Date("2024-01-15T12:00:00.000Z");
+    expect(formatDate(date)).toBe("Jan 15, 2024");
+  });
+
+  it("should format different months correctly", () => {
+    expect(formatDate(new Date("2024-03-20T12:00:00.000Z"))).toBe("Mar 20, 2024");
+    expect(formatDate(new Date("2024-12-31T12:00:00.000Z"))).toBe("Dec 31, 2024");
+  });
+
+  it("should format dates from different years", () => {
+    expect(formatDate(new Date("2023-06-15T12:00:00.000Z"))).toBe("Jun 15, 2023");
+    expect(formatDate(new Date("2025-09-01T12:00:00.000Z"))).toBe("Sep 1, 2025");
+  });
+
+  it("should handle single digit days", () => {
+    expect(formatDate(new Date("2024-05-05T12:00:00.000Z"))).toBe("May 5, 2024");
+  });
+
+  it("should handle double digit days", () => {
+    expect(formatDate(new Date("2024-11-28T12:00:00.000Z"))).toBe("Nov 28, 2024");
+  });
+
+  it("should handle the first day of the year", () => {
+    expect(formatDate(new Date("2024-01-01T00:00:00.000Z"))).toBe("Jan 1, 2024");
+  });
+
+  it("should handle the last day of the year", () => {
+    expect(formatDate(new Date("2024-12-31T23:59:59.999Z"))).toBe("Dec 31, 2024");
+  });
+
+  it("should format leap year date", () => {
+    expect(formatDate(new Date("2024-02-29T12:00:00.000Z"))).toBe("Feb 29, 2024");
   });
 });

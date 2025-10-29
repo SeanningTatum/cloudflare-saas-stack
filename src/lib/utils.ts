@@ -36,3 +36,30 @@ export function generateFileKey({
   const sanitizedName = sanitizeFilename(filename);
   return `${pathPrefix}/${userId}/${timestamp}-${randomId}-${sanitizedName}`;
 }
+
+/**
+ * Extracts and returns the initials from a name (first 2 letters)
+ * @param name - The full name to extract initials from
+ * @returns The first two initials in uppercase
+ */
+export function getInitials(name: string): string {
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+}
+
+/**
+ * Formats a date to a human-readable string
+ * @param date - The date to format
+ * @returns Formatted date string (e.g., "Jan 15, 2024")
+ */
+export function formatDate(date: Date): string {
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  }).format(new Date(date));
+}
