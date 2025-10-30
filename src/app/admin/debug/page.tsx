@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select"
 import { api } from "@/trpc/client"
 import { toast } from "sonner"
+import { SiteHeader } from "@/components/dashboard/site-header"
 
 export default function DebugPage() {
   const [customCount, setCustomCount] = useState("10")
@@ -44,29 +45,13 @@ export default function DebugPage() {
     })
   }
 
-  function handleCustomSeed() {
-    const count = parseInt(customCount, 10)
-    if (isNaN(count) || count < 1 || count > 1000) {
-      toast.error("Please enter a valid number between 1 and 1000")
-      return
-    }
-    handleSeedUsers(count)
-  }
-
   const isLoading = seedUsersMutation.isPending
 
   return (
-    <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Debug Tools</h1>
-          <p className="text-muted-foreground">
-            Development tools for testing and debugging
-          </p>
-        </div>
-      </div>
+    <>
+      <SiteHeader title="Debug Tools" />
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 px-6 py-4">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -155,34 +140,6 @@ export default function DebugPage() {
                 )}
               </Button>
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="customCount">Custom Amount</Label>
-              <div className="flex gap-2">
-                <Input
-                  id="customCount"
-                  type="number"
-                  min="1"
-                  max="1000"
-                  value={customCount}
-                  onChange={(e) => setCustomCount(e.target.value)}
-                  placeholder="Enter number"
-                />
-                <Button
-                  onClick={handleCustomSeed}
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <IconLoader2 className="size-4 animate-spin" />
-                  ) : (
-                    "Seed"
-                  )}
-                </Button>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Maximum 1000 users per batch
-              </p>
-            </div>
           </CardContent>
         </Card>
 
@@ -215,7 +172,8 @@ export default function DebugPage() {
           </CardContent>
         </Card>
       </div>
-    </div>
+
+    </>
   )
 }
 

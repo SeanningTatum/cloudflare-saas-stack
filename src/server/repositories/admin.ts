@@ -348,3 +348,57 @@ export async function deleteUser(db: Database, input: DeleteUserInput) {
     throw new DeletionError("user", "Failed to delete user", error);
   }
 }
+
+interface BulkUpdateUsersUnsafeInput {
+  updates: Array<{
+    userId: string;
+    data: {
+      name?: string;
+      email?: string;
+      role?: "user" | "admin";
+      banned?: boolean;
+      banReason?: string;
+      banExpires?: Date;
+      verified?: boolean;
+    };
+  }>;
+}
+
+/**
+ * Bulk update users without validation checks.
+ * WARNING: Use only in trusted contexts (e.g., seeding, migrations).
+ * Does not validate user roles or permissions.
+ */
+export async function bulkUpdateUsersUnsafe(
+  db: Database,
+  input: BulkUpdateUsersUnsafeInput
+): Promise<number> {
+  if (input.updates.length === 0) {
+    return 0;
+  }
+
+  try {
+    await Promise.all(
+      input.updates.map((update) => {
+        const updateData: Partial<typeof user.$inferInsert> = {
+          name: update.data.name,
+          email: update.data.email,
+          role: update.data.role,
+          banned: update.data.banned,
+          banReason: update.data.banReason,
+          banExpires: update.data.banExpires,
+          emailVerified: update.data.verified,
+        };
+
+        return db
+          .update(user)
+          .set(updateData)
+          .where(eq(user.id, update.userId));
+      })
+    );
+
+    return input.updates.length;
+  } catch (error) {
+    throw new UpdateError("user", "Failed to bulk update users", error);
+  }
+}

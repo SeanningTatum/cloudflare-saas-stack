@@ -37,30 +37,33 @@ export const debugRouter = createTRPCRouter({
           })
         );
 
-        const updatedUsers = await Promise.all(
-          seededUsers.map(({ user }, index) => {
-            const seedData = users[index];
+        // Use bulk update for performance - much faster than individual updates
+        const updates = seededUsers.map(({ user }, index) => {
+          const seedData = users[index];
 
-            return adminRepository.updateUser(ctx.db, {
-              userId: user.id,
-              currentUserId: ctx.user.id,
-              data: {
-                verified: seedData?.shouldBeEmailVerified,
-                banned: seedData?.shouldBeBanned,
-                banReason: seedData?.shouldBeBanned
-                  ? "Banned during seeding"
-                  : undefined,
-                banExpires: seedData?.shouldBeBanned
-                  ? new Date(Date.now() + 1000 * 60 * 60 * 24 * 30)
-                  : undefined,
-              },
-            });
-          })
+          return {
+            userId: user.id,
+            data: {
+              verified: seedData?.shouldBeEmailVerified,
+              banned: seedData?.shouldBeBanned,
+              banReason: seedData?.shouldBeBanned
+                ? "Banned during seeding"
+                : undefined,
+              banExpires: seedData?.shouldBeBanned
+                ? new Date(Date.now() + 1000 * 60 * 60 * 24 * 30)
+                : undefined,
+            },
+          };
+        });
+
+        const updatedCount = await adminRepository.bulkUpdateUsersUnsafe(
+          ctx.db,
+          { updates }
         );
 
         return {
-          updatedUsers,
-          count: updatedUsers.length,
+          count: updatedCount,
+          message: `Successfully seeded ${updatedCount} users`,
         };
       } catch (error) {
         if (error instanceof ValidationError) {
