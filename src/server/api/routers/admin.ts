@@ -1,11 +1,15 @@
 import { z } from "zod";
-import {
-  adminProcedure,
-  createTRPCRouter,
-  protectedProcedure,
-} from "@/server/trpc";
+import { TRPCError } from "@trpc/server";
+import { adminProcedure, createTRPCRouter } from "@/server/trpc";
 import { user } from "@/server/db/schema";
-import { desc } from "drizzle-orm";
+import { desc, inArray } from "drizzle-orm";
+import * as adminRepo from "@/server/repositories/admin";
+import {
+  NotFoundError,
+  ValidationError,
+  UpdateError,
+  DeletionError,
+} from "@/models/errors";
 
 export const adminRouter = createTRPCRouter({
   getUsers: adminProcedure
@@ -28,7 +32,6 @@ export const adminRouter = createTRPCRouter({
         .offset(input.page ?? 0);
     }),
 
-  // Placeholder: Bulk ban users
   bulkBanUsers: adminProcedure
     .input(
       z.object({
@@ -38,29 +41,98 @@ export const adminRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ input, ctx }) => {
-      // TODO: Implement bulk ban logic
-      // This should:
-      // 1. Update the banned field to true for all userIds
-      // 2. Set banReason and banExpires if provided
-      // 3. Optionally: Invalidate user sessions
-      console.log("Bulk ban users:", input);
-      throw new Error("Not implemented yet");
+      try {
+        const { validUserIds, skippedCount } =
+          await adminRepo.filterProtectedUsers(
+            ctx.db,
+            input.userIds,
+            ctx.user.id
+          );
+
+        if (validUserIds.length === 0) {
+          throw new ValidationError("user", "No valid user IDs provided");
+        }
+
+        const bannedCount = await adminRepo.bulkBanUsers(ctx.db, {
+          userIds: validUserIds,
+          reason: input.reason,
+          expiresAt: input.expiresAt,
+        });
+
+        return {
+          bannedCount,
+          skippedCount,
+        };
+      } catch (error) {
+        if (error instanceof ValidationError) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: error.message,
+            cause: error,
+          });
+        }
+        if (error instanceof UpdateError) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: error.message,
+            cause: error,
+          });
+        }
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "An unexpected error occurred",
+          cause: error,
+        });
+      }
     }),
 
-  // Placeholder: Bulk delete users
   bulkDeleteUsers: adminProcedure
     .input(z.object({ userIds: z.array(z.string()) }))
     .mutation(async ({ input, ctx }) => {
-      // TODO: Implement bulk delete logic
-      // This should:
-      // 1. Delete users from the database
-      // 2. Cascade delete related sessions and accounts
-      // 3. Optionally: Clean up user-related data (files, etc.)
-      console.log("Bulk delete users:", input);
-      throw new Error("Not implemented yet");
+      try {
+        const { validUserIds, skippedCount } =
+          await adminRepo.filterProtectedUsers(
+            ctx.db,
+            input.userIds,
+            ctx.user.id
+          );
+
+        if (validUserIds.length === 0) {
+          throw new ValidationError("user", "No valid user IDs provided");
+        }
+
+        const deletedCount = await adminRepo.bulkDeleteUsers(ctx.db, {
+          userIds: validUserIds,
+        });
+
+        return {
+          deletedCount,
+          skippedCount,
+        };
+      } catch (error) {
+        if (error instanceof DeletionError) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: error.message,
+            cause: error,
+          });
+        }
+
+        if (error instanceof ValidationError) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: error.message,
+            cause: error,
+          });
+        }
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "An unexpected error occurred",
+          cause: error,
+        });
+      }
     }),
 
-  // Placeholder: Bulk update user roles
   bulkUpdateUserRoles: adminProcedure
     .input(
       z.object({
@@ -69,29 +141,80 @@ export const adminRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ input, ctx }) => {
-      // TODO: Implement bulk role update logic
-      // This should:
-      // 1. Update the role field for all userIds
-      // 2. Validate that at least one admin remains in the system
-      console.log("Bulk update user roles:", input);
-      throw new Error("Not implemented yet");
+      try {
+        const { validUserIds, skippedCount } =
+          await adminRepo.filterProtectedUsers(
+            ctx.db,
+            input.userIds,
+            ctx.user.id
+          );
+
+        if (validUserIds.length === 0) {
+          throw new ValidationError("user", "No valid user IDs provided");
+        }
+
+        const updatedCount = await adminRepo.bulkUpdateUserRoles(ctx.db, {
+          userIds: validUserIds,
+          role: input.role,
+        });
+
+        return {
+          updatedCount,
+          skippedCount,
+        };
+      } catch (error) {
+        if (error instanceof ValidationError) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: error.message,
+            cause: error,
+          });
+        }
+        if (error instanceof UpdateError) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: error.message,
+            cause: error,
+          });
+        }
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "An unexpected error occurred",
+          cause: error,
+        });
+      }
     }),
 
-  // Placeholder: Get single user details
   getUser: adminProcedure
     .input(z.object({ userId: z.string() }))
     .query(async ({ input, ctx }) => {
-      // TODO: Implement get user details
-      // This should return full user information including:
-      // - User profile data
-      // - Account information
-      // - Session history
-      // - Activity logs
-      console.log("Get user:", input);
-      throw new Error("Not implemented yet");
+      try {
+        return await adminRepo.getUser(ctx.db, {
+          userId: input.userId,
+        });
+      } catch (error) {
+        if (error instanceof NotFoundError) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: error.message,
+            cause: error,
+          });
+        }
+        if (error instanceof UpdateError) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: error.message,
+            cause: error,
+          });
+        }
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "An unexpected error occurred",
+          cause: error,
+        });
+      }
     }),
 
-  // Placeholder: Update user
   updateUser: adminProcedure
     .input(
       z.object({
@@ -107,16 +230,42 @@ export const adminRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ input, ctx }) => {
-      // TODO: Implement user update logic
-      // This should:
-      // 1. Update user fields in the database
-      // 2. Validate email uniqueness if email is being updated
-      // 3. Handle role changes appropriately
-      console.log("Update user:", input);
-      throw new Error("Not implemented yet");
+      try {
+        return await adminRepo.updateUser(ctx.db, {
+          userId: input.userId,
+          currentUserId: ctx.user.id,
+          data: input.data,
+        });
+      } catch (error) {
+        if (error instanceof NotFoundError) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: error.message,
+            cause: error,
+          });
+        }
+        if (error instanceof ValidationError) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: error.message,
+            cause: error,
+          });
+        }
+        if (error instanceof UpdateError) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: error.message,
+            cause: error,
+          });
+        }
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "An unexpected error occurred",
+          cause: error,
+        });
+      }
     }),
 
-  // Placeholder: Ban single user
   banUser: adminProcedure
     .input(
       z.object({
@@ -126,37 +275,108 @@ export const adminRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ input, ctx }) => {
-      // TODO: Implement ban user logic
-      // This should:
-      // 1. Update the banned field to true
-      // 2. Set banReason and banExpires if provided
-      // 3. Optionally: Invalidate user sessions
-      console.log("Ban user:", input);
-      throw new Error("Not implemented yet");
+      try {
+        return await adminRepo.banUser(ctx.db, {
+          userId: input.userId,
+          currentUserId: ctx.user.id,
+          reason: input.reason,
+          expiresAt: input.expiresAt,
+        });
+      } catch (error) {
+        if (error instanceof NotFoundError) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: error.message,
+            cause: error,
+          });
+        }
+        if (error instanceof ValidationError) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: error.message,
+            cause: error,
+          });
+        }
+        if (error instanceof UpdateError) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: error.message,
+            cause: error,
+          });
+        }
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "An unexpected error occurred",
+          cause: error,
+        });
+      }
     }),
 
-  // Placeholder: Unban single user
   unbanUser: adminProcedure
     .input(z.object({ userId: z.string() }))
     .mutation(async ({ input, ctx }) => {
-      // TODO: Implement unban user logic
-      // This should:
-      // 1. Update the banned field to false
-      // 2. Clear banReason and banExpires
-      console.log("Unban user:", input);
-      throw new Error("Not implemented yet");
+      try {
+        return await adminRepo.unbanUser(ctx.db, {
+          userId: input.userId,
+        });
+      } catch (error) {
+        if (error instanceof NotFoundError) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: error.message,
+            cause: error,
+          });
+        }
+        if (error instanceof UpdateError) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: error.message,
+            cause: error,
+          });
+        }
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "An unexpected error occurred",
+          cause: error,
+        });
+      }
     }),
 
-  // Placeholder: Delete single user
   deleteUser: adminProcedure
     .input(z.object({ userId: z.string() }))
     .mutation(async ({ input, ctx }) => {
-      // TODO: Implement delete user logic
-      // This should:
-      // 1. Delete user from the database
-      // 2. Cascade delete related sessions and accounts
-      // 3. Optionally: Clean up user-related data (files, etc.)
-      console.log("Delete user:", input);
-      throw new Error("Not implemented yet");
+      try {
+        return await adminRepo.deleteUser(ctx.db, {
+          userId: input.userId,
+          currentUserId: ctx.user.id,
+        });
+      } catch (error) {
+        if (error instanceof NotFoundError) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: error.message,
+            cause: error,
+          });
+        }
+        if (error instanceof ValidationError) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: error.message,
+            cause: error,
+          });
+        }
+        if (error instanceof DeletionError) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: error.message,
+            cause: error,
+          });
+        }
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "An unexpected error occurred",
+          cause: error,
+        });
+      }
     }),
 });
