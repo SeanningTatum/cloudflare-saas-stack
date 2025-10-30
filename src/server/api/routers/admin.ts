@@ -16,6 +16,7 @@ export const adminRouter = createTRPCRouter({
       z.object({
         page: z.number().default(0),
         limit: z.number().default(10),
+        search: z.string().optional(),
       })
     )
     .query(async ({ ctx, input }) => {
@@ -23,6 +24,7 @@ export const adminRouter = createTRPCRouter({
         return await adminRepo.getUsers(ctx.db, {
           page: input.page,
           limit: input.limit,
+          search: input.search,
         });
       } catch (error) {
         if (error instanceof UpdateError) {

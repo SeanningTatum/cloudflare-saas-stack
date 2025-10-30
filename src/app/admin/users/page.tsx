@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { toast } from "sonner"
 
 import { SiteHeader } from "@/components/dashboard/site-header"
@@ -14,10 +14,26 @@ export default function UsersPage() {
     pageIndex: 0,
     pageSize: 10,
   })
+  const [search, setSearch] = useState("")
+  const [debouncedSearch, setDebouncedSearch] = useState("")
+
+  // Debounce search input
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search)
+      // Reset to first page when search changes
+      if (search !== debouncedSearch) {
+        setPagination((prev) => ({ ...prev, pageIndex: 0 }))
+      }
+    }, 300)
+
+    return () => clearTimeout(timer)
+  }, [search])
 
   const { data: usersResponse, isLoading } = api.admin.getUsers.useQuery({
     page: pagination.pageIndex,
     limit: pagination.pageSize,
+    search: debouncedSearch || undefined,
   })
 
   // MARK:- Bulk mutations
@@ -183,6 +199,8 @@ export default function UsersPage() {
             totalCount={usersResponse?.total ?? 0}
             pagination={pagination}
             onPaginationChange={setPagination}
+            search={search}
+            onSearchChange={setSearch}
             onBulkBan={handleBulkBan}
             onBulkDelete={handleBulkDelete}
             onBulkUpdateRole={handleBulkUpdateRole}

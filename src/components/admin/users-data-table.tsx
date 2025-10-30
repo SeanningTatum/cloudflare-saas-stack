@@ -70,6 +70,8 @@ interface UsersDataTableProps {
   totalCount: number
   pagination: PaginationState
   onPaginationChange: (pagination: PaginationState) => void
+  search: string
+  onSearchChange: (search: string) => void
   onBulkBan?: (userIds: string[]) => Promise<void>
   onBulkDelete?: (userIds: string[]) => Promise<void>
   onBulkUpdateRole?: (userIds: string[], role: "user" | "admin") => Promise<void>
@@ -86,6 +88,8 @@ export function UsersDataTable({
   totalCount,
   pagination,
   onPaginationChange,
+  search,
+  onSearchChange,
   onBulkBan,
   onBulkDelete,
   onBulkUpdateRole,
@@ -309,11 +313,9 @@ export function UsersDataTable({
       <div className="flex items-center justify-between">
         <div className="flex flex-1 items-center gap-2">
           <Input
-            placeholder="Filter users..."
-            value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
-            onChange={(event) =>
-              table.getColumn("name")?.setFilterValue(event.target.value)
-            }
+            placeholder="Search users by name or email..."
+            value={search}
+            onChange={(event) => onSearchChange(event.target.value)}
             className="max-w-sm"
           />
         </div>

@@ -1,4 +1,4 @@
-import { eq, inArray, count, desc } from "drizzle-orm";
+import { eq, inArray, count, desc, or, like } from "drizzle-orm";
 import { user } from "@/server/db/schema";
 import {
   NotFoundError,
@@ -13,20 +13,30 @@ type Database = TRPCContext["db"];
 interface GetUsersInput {
   page: number;
   limit: number;
+  search?: string;
 }
 
 export async function getUsers(db: Database, input: GetUsersInput) {
   try {
     const offset = input.page * input.limit;
 
+    // Build search condition
+    const searchCondition = input.search
+      ? or(
+          like(user.name, `%${input.search}%`),
+          like(user.email, `%${input.search}%`)
+        )
+      : undefined;
+
     const [users, totalCountResult] = await Promise.all([
       db
         .select()
         .from(user)
+        .where(searchCondition)
         .orderBy(desc(user.createdAt))
         .limit(input.limit)
         .offset(offset),
-      db.select({ count: count() }).from(user),
+      db.select({ count: count() }).from(user).where(searchCondition),
     ]);
 
     return {
