@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { toast } from "sonner"
 
 import { SiteHeader } from "@/components/dashboard/site-header"
@@ -9,9 +10,14 @@ import { filterNonAdminUsers } from "@/lib/auth"
 
 export default function UsersPage() {
   const utils = api.useUtils()
-  const { data: usersData, isLoading } = api.admin.getUsers.useQuery({
-    page: 0,
-    limit: 100,
+  const [pagination, setPagination] = useState({
+    pageIndex: 0,
+    pageSize: 10,
+  })
+
+  const { data: usersResponse, isLoading } = api.admin.getUsers.useQuery({
+    page: pagination.pageIndex,
+    limit: pagination.pageSize,
   })
 
   // MARK:- Bulk mutations
@@ -87,7 +93,8 @@ export default function UsersPage() {
 
   // Bulk action handlers
   async function handleBulkBan(userIds: string[]) {
-    const filteredUserIds = filterNonAdminUsers(userIds)
+    if (!usersResponse?.users) return
+    const filteredUserIds = filterNonAdminUsers(userIds, usersResponse.users)
     if (filteredUserIds.length === 0) {
       toast.error("Cannot perform action on admin users")
       return
@@ -102,7 +109,8 @@ export default function UsersPage() {
   }
 
   async function handleBulkDelete(userIds: string[]) {
-    const filteredUserIds = filterNonAdminUsers(userIds)
+    if (!usersResponse?.users) return
+    const filteredUserIds = filterNonAdminUsers(userIds, usersResponse.users)
     if (filteredUserIds.length === 0) {
       toast.error("Cannot perform action on admin users")
       return
@@ -114,7 +122,8 @@ export default function UsersPage() {
   }
 
   async function handleBulkUpdateRole(userIds: string[], role: "user" | "admin") {
-    const filteredUserIds = filterNonAdminUsers(userIds)
+    if (!usersResponse?.users) return
+    const filteredUserIds = filterNonAdminUsers(userIds, usersResponse.users)
     if (filteredUserIds.length === 0) {
       toast.error("Cannot perform action on admin users")
       return
@@ -127,7 +136,7 @@ export default function UsersPage() {
 
   // Single user action handlers
   async function handleBanUser(userId: string) {
-    const user = usersData?.find((u) => u.id === userId)
+    const user = usersResponse?.users?.find((u) => u.id === userId)
     if (user?.role === "admin") {
       toast.error("Cannot ban admin users")
       return
@@ -140,7 +149,7 @@ export default function UsersPage() {
   }
 
   async function handleDeleteUser(userId: string) {
-    const user = usersData?.find((u) => u.id === userId)
+    const user = usersResponse?.users?.find((u) => u.id === userId)
     if (user?.role === "admin") {
       toast.error("Cannot delete admin users")
       return
@@ -149,7 +158,7 @@ export default function UsersPage() {
   }
 
   async function handleUpdateUserRole(userId: string, role: "user" | "admin") {
-    const user = usersData?.find((u) => u.id === userId)
+    const user = usersResponse?.users?.find((u) => u.id === userId)
     if (user?.role === "admin") {
       toast.error("Cannot modify admin user roles")
       return
@@ -170,7 +179,10 @@ export default function UsersPage() {
           </div>
         ) : (
           <UsersDataTable
-            data={usersData ?? []}
+            data={usersResponse?.users ?? []}
+            totalCount={usersResponse?.total ?? 0}
+            pagination={pagination}
+            onPaginationChange={setPagination}
             onBulkBan={handleBulkBan}
             onBulkDelete={handleBulkDelete}
             onBulkUpdateRole={handleBulkUpdateRole}

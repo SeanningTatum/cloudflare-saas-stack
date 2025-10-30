@@ -60,8 +60,16 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { User } from "@/server/db/schema"
 import { formatDate, getInitials } from "@/lib/utils"
 
+interface PaginationState {
+  pageIndex: number
+  pageSize: number
+}
+
 interface UsersDataTableProps {
   data: User[]
+  totalCount: number
+  pagination: PaginationState
+  onPaginationChange: (pagination: PaginationState) => void
   onBulkBan?: (userIds: string[]) => Promise<void>
   onBulkDelete?: (userIds: string[]) => Promise<void>
   onBulkUpdateRole?: (userIds: string[], role: "user" | "admin") => Promise<void>
@@ -75,6 +83,9 @@ interface UsersDataTableProps {
 
 export function UsersDataTable({
   data,
+  totalCount,
+  pagination,
+  onPaginationChange,
   onBulkBan,
   onBulkDelete,
   onBulkUpdateRole,
@@ -90,10 +101,6 @@ export function UsersDataTable({
     []
   )
   const [sorting, setSorting] = React.useState<SortingState>([])
-  const [pagination, setPagination] = React.useState({
-    pageIndex: 0,
-    pageSize: 10,
-  })
 
   const columns: ColumnDef<User>[] = [
     {
@@ -253,9 +260,12 @@ export function UsersDataTable({
     },
   ]
 
+  const pageCount = Math.ceil(totalCount / pagination.pageSize)
+
   const table = useReactTable({
     data,
     columns,
+    pageCount,
     state: {
       sorting,
       columnVisibility,
@@ -269,10 +279,14 @@ export function UsersDataTable({
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
-    onPaginationChange: setPagination,
+    onPaginationChange: (updater) => {
+      const newPagination =
+        typeof updater === "function" ? updater(pagination) : updater
+      onPaginationChange(newPagination)
+    },
+    manualPagination: true,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
@@ -463,7 +477,7 @@ export function UsersDataTable({
       <div className="flex items-center justify-between px-2">
         <div className="text-muted-foreground flex-1 text-sm">
           {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} row(s) selected.
+          {data.length} row(s) selected. Total: {totalCount} users
         </div>
         <div className="flex items-center gap-6 lg:gap-8">
           <div className="flex items-center gap-2">

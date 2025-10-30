@@ -1,4 +1,4 @@
-import { eq, inArray } from "drizzle-orm";
+import { eq, inArray, count, desc } from "drizzle-orm";
 import { user } from "@/server/db/schema";
 import {
   NotFoundError,
@@ -9,6 +9,37 @@ import {
 import type { TRPCContext } from "@/server/trpc";
 
 type Database = TRPCContext["db"];
+
+interface GetUsersInput {
+  page: number;
+  limit: number;
+}
+
+export async function getUsers(db: Database, input: GetUsersInput) {
+  try {
+    const offset = input.page * input.limit;
+
+    const [users, totalCountResult] = await Promise.all([
+      db
+        .select()
+        .from(user)
+        .orderBy(desc(user.createdAt))
+        .limit(input.limit)
+        .offset(offset),
+      db.select({ count: count() }).from(user),
+    ]);
+
+    return {
+      users,
+      total: totalCountResult[0]?.count ?? 0,
+      page: input.page,
+      limit: input.limit,
+      totalPages: Math.ceil((totalCountResult[0]?.count ?? 0) / input.limit),
+    };
+  } catch (error) {
+    throw new UpdateError("user", "Failed to retrieve users", error);
+  }
+}
 
 export async function filterProtectedUsers(
   db: Database,

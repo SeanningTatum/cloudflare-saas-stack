@@ -1,9 +1,7 @@
 import { z } from "zod";
-import { desc } from "drizzle-orm";
 
 import { TRPCError } from "@trpc/server";
 import { adminProcedure, createTRPCRouter } from "@/server/trpc";
-import { user } from "@/server/db/schema";
 import * as adminRepo from "@/server/repositories/admin";
 import {
   NotFoundError,
@@ -16,21 +14,30 @@ export const adminRouter = createTRPCRouter({
   getUsers: adminProcedure
     .input(
       z.object({
-        page: z.number().optional(),
-        limit: z.number().optional(),
+        page: z.number().default(0),
+        limit: z.number().default(10),
       })
     )
     .query(async ({ ctx, input }) => {
-      if (!ctx.headers) {
-        throw new Error("Headers not available in context");
+      try {
+        return await adminRepo.getUsers(ctx.db, {
+          page: input.page,
+          limit: input.limit,
+        });
+      } catch (error) {
+        if (error instanceof UpdateError) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: error.message,
+            cause: error,
+          });
+        }
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "An unexpected error occurred",
+          cause: error,
+        });
       }
-
-      return ctx.db
-        .select()
-        .from(user)
-        .orderBy(desc(user.createdAt))
-        .limit(input.limit ?? 100)
-        .offset(input.page ?? 0);
     }),
 
   bulkBanUsers: adminProcedure
