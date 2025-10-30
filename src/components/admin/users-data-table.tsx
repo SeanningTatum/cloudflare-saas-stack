@@ -27,7 +27,6 @@ import {
   IconTrash,
   IconUserOff,
 } from "@tabler/icons-react"
-import { toast } from "sonner"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -66,6 +65,10 @@ interface UsersDataTableProps {
   onBulkBan?: (userIds: string[]) => Promise<void>
   onBulkDelete?: (userIds: string[]) => Promise<void>
   onBulkUpdateRole?: (userIds: string[], role: "user" | "admin") => Promise<void>
+  onBanUser?: (userId: string) => Promise<void>
+  onUnbanUser?: (userId: string) => Promise<void>
+  onDeleteUser?: (userId: string) => Promise<void>
+  onUpdateUserRole?: (userId: string, role: "user" | "admin") => Promise<void>
 }
 
 
@@ -75,6 +78,10 @@ export function UsersDataTable({
   onBulkBan,
   onBulkDelete,
   onBulkUpdateRole,
+  onBanUser,
+  onUnbanUser,
+  onDeleteUser,
+  onUpdateUserRole,
 }: UsersDataTableProps) {
   const [rowSelection, setRowSelection] = React.useState({})
   const [columnVisibility, setColumnVisibility] =
@@ -103,15 +110,19 @@ export function UsersDataTable({
           />
         </div>
       ),
-      cell: ({ row }) => (
-        <div className="flex items-center justify-center">
-          <Checkbox
-            checked={row.getIsSelected()}
-            onCheckedChange={(value) => row.toggleSelected(!!value)}
-            aria-label="Select row"
-          />
-        </div>
-      ),
+      cell: ({ row }) => {
+        const isAdmin = row.original.role === "admin"
+        return (
+          <div className="flex items-center justify-center">
+            <Checkbox
+              checked={row.getIsSelected()}
+              onCheckedChange={(value) => row.toggleSelected(!!value)}
+              aria-label="Select row"
+              disabled={isAdmin}
+            />
+          </div>
+        )
+      },
       enableSorting: false,
       enableHiding: false,
     },
@@ -179,34 +190,66 @@ export function UsersDataTable({
     },
     {
       id: "actions",
-      cell: ({ row }) => (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              className="data-[state=open]:bg-muted text-muted-foreground flex size-8"
-              size="icon"
-            >
-              <IconDotsVertical />
-              <span className="sr-only">Open menu</span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-40">
-            <DropdownMenuItem>View Details</DropdownMenuItem>
-            <DropdownMenuItem>Edit User</DropdownMenuItem>
-            <DropdownMenuItem>
-              {row.original.role === "admin" ? "Remove Admin" : "Make Admin"}
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              {row.original.banned ? "Unban User" : "Ban User"}
-            </DropdownMenuItem>
-            <DropdownMenuItem variant="destructive">
-              Delete User
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      ),
+      cell: ({ row }) => {
+        const user = row.original
+        const isAdmin = user.role === "admin"
+
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                className="data-[state=open]:bg-muted text-muted-foreground flex size-8"
+                size="icon"
+              >
+                <IconDotsVertical />
+                <span className="sr-only">Open menu</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-40">
+              <DropdownMenuItem disabled>View Details</DropdownMenuItem>
+              <DropdownMenuItem disabled>Edit User</DropdownMenuItem>
+              <DropdownMenuItem
+                disabled={isAdmin}
+                onClick={() => {
+                  if (onUpdateUserRole && !isAdmin) {
+                    onUpdateUserRole(
+                      user.id,
+                      user.role === "admin" ? "user" : "admin"
+                    )
+                  }
+                }}
+              >
+                {user.role === "admin" ? "Remove Admin" : "Make Admin"}
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                disabled={isAdmin}
+                onClick={() => {
+                  if (user.banned && onUnbanUser) {
+                    onUnbanUser(user.id)
+                  } else if (!user.banned && onBanUser && !isAdmin) {
+                    onBanUser(user.id)
+                  }
+                }}
+              >
+                {user.banned ? "Unban User" : "Ban User"}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                variant="destructive"
+                disabled={isAdmin}
+                onClick={() => {
+                  if (onDeleteUser && !isAdmin) {
+                    onDeleteUser(user.id)
+                  }
+                }}
+              >
+                Delete User
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )
+      },
     },
   ]
 
@@ -221,7 +264,7 @@ export function UsersDataTable({
       pagination,
     },
     getRowId: (row) => row.id,
-    enableRowSelection: true,
+    enableRowSelection: (row) => row.original.role !== "admin",
     onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -238,18 +281,12 @@ export function UsersDataTable({
   const selectedRows = table.getFilteredSelectedRowModel().rows
   const hasSelection = selectedRows.length > 0
 
-  async function handleBulkAction(
-    action: () => Promise<void>,
-    successMessage: string
-  ) {
+  async function handleBulkAction(action: () => Promise<void>) {
     try {
       await action()
-      toast.success(successMessage)
       setRowSelection({})
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "An error occurred"
-      )
+      // Error handling is done by the mutation hooks in the parent component
     }
   }
 
@@ -278,17 +315,14 @@ export function UsersDataTable({
               <DropdownMenuContent align="end" className="w-48">
                 <DropdownMenuItem
                   onClick={() =>
-                    handleBulkAction(
-                      async () => {
-                        if (onBulkUpdateRole) {
-                          await onBulkUpdateRole(
-                            selectedRows.map((r) => r.original.id),
-                            "admin"
-                          )
-                        }
-                      },
-                      "Users promoted to admin"
-                    )
+                    handleBulkAction(async () => {
+                      if (onBulkUpdateRole) {
+                        await onBulkUpdateRole(
+                          selectedRows.map((r) => r.original.id),
+                          "admin"
+                        )
+                      }
+                    })
                   }
                 >
                   <IconShieldCheck className="mr-2 size-4" />
@@ -296,17 +330,14 @@ export function UsersDataTable({
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() =>
-                    handleBulkAction(
-                      async () => {
-                        if (onBulkUpdateRole) {
-                          await onBulkUpdateRole(
-                            selectedRows.map((r) => r.original.id),
-                            "user"
-                          )
-                        }
-                      },
-                      "Admin privileges removed"
-                    )
+                    handleBulkAction(async () => {
+                      if (onBulkUpdateRole) {
+                        await onBulkUpdateRole(
+                          selectedRows.map((r) => r.original.id),
+                          "user"
+                        )
+                      }
+                    })
                   }
                 >
                   <IconUserOff className="mr-2 size-4" />
@@ -315,14 +346,11 @@ export function UsersDataTable({
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onClick={() =>
-                    handleBulkAction(
-                      async () => {
-                        if (onBulkBan) {
-                          await onBulkBan(selectedRows.map((r) => r.original.id))
-                        }
-                      },
-                      "Users banned successfully"
-                    )
+                    handleBulkAction(async () => {
+                      if (onBulkBan) {
+                        await onBulkBan(selectedRows.map((r) => r.original.id))
+                      }
+                    })
                   }
                 >
                   <IconUserOff className="mr-2 size-4" />
@@ -331,16 +359,13 @@ export function UsersDataTable({
                 <DropdownMenuItem
                   variant="destructive"
                   onClick={() =>
-                    handleBulkAction(
-                      async () => {
-                        if (onBulkDelete) {
-                          await onBulkDelete(
-                            selectedRows.map((r) => r.original.id)
-                          )
-                        }
-                      },
-                      "Users deleted successfully"
-                    )
+                    handleBulkAction(async () => {
+                      if (onBulkDelete) {
+                        await onBulkDelete(
+                          selectedRows.map((r) => r.original.id)
+                        )
+                      }
+                    })
                   }
                 >
                   <IconTrash className="mr-2 size-4" />

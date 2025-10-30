@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { TRPCProvider } from "@/trpc/client";
 import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "@/components/ui/sonner";
 
 import "./globals.css";
 
@@ -19,6 +20,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+
       <TRPCProvider>
         <ThemeProvider
           attribute="class"
@@ -28,6 +30,7 @@ export default function RootLayout({
         >
           <body className={inter.className}>
             {children}
+            <Toaster />
           </body>
         </ThemeProvider>
       </TRPCProvider>

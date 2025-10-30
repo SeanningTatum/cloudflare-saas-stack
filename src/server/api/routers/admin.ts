@@ -1,8 +1,9 @@
 import { z } from "zod";
+import { desc } from "drizzle-orm";
+
 import { TRPCError } from "@trpc/server";
 import { adminProcedure, createTRPCRouter } from "@/server/trpc";
 import { user } from "@/server/db/schema";
-import { desc, inArray } from "drizzle-orm";
 import * as adminRepo from "@/server/repositories/admin";
 import {
   NotFoundError,
