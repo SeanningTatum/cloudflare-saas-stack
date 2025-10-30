@@ -1,7 +1,7 @@
 "use client"
 
 import { SiteHeader } from "@/components/dashboard/site-header"
-import { UsersDataTable, type User } from "@/components/admin/users-data-table"
+import { UsersDataTable } from "@/components/admin/users-data-table"
 import { api } from "@/trpc/client"
 import { toast } from "sonner"
 
