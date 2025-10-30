@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { signUp } from "@/lib/auth/auth-client"
+import { authClient } from "@/lib/auth/auth-client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -38,7 +38,7 @@ export function SignupForm() {
         return
       }
 
-      const result = await signUp.email({
+      const result = await authClient.signUp.email({
         email,
         password,
         name,

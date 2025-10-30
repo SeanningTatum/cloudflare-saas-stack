@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { signIn } from "@/lib/auth/auth-client"
+import { authClient } from "@/lib/auth/auth-client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -29,7 +29,7 @@ export function LoginForm() {
     setIsLoading(true)
 
     try {
-      const result = await signIn.email({
+      const result = await authClient.signIn.email({
         email,
         password,
       })

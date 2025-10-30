@@ -180,6 +180,7 @@ interface UpdateUserInput {
     banned?: boolean;
     banReason?: string;
     banExpires?: Date;
+    verified?: boolean;
   };
 }
 
@@ -213,6 +214,7 @@ export async function updateUser(db: Database, input: UpdateUserInput) {
       banned: input.data.banned,
       banReason: input.data.banReason,
       banExpires: input.data.banExpires,
+      emailVerified: input.data.verified,
     };
 
     await db.update(user).set(updateData).where(eq(user.id, input.userId));

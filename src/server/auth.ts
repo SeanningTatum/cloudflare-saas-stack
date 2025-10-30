@@ -4,7 +4,7 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { getDb } from "./db";
 import { env } from "@/env.mjs";
 
-async function configureAuth() {
+export async function configureAuth(database?: D1Database) {
   const betterAuthConfig: Omit<BetterAuthOptions, "database"> = {
     plugins: [
       admin({
@@ -48,7 +48,7 @@ async function configureAuth() {
   const db = await getDb();
 
   return betterAuth({
-    database: drizzleAdapter(db, {
+    database: drizzleAdapter(database ?? db, {
       provider: "sqlite",
     }),
     ...betterAuthConfig,

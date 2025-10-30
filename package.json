@@ -23,6 +23,7 @@
     "db:studio:dev": "drizzle-kit studio",
     "db:studio:prod": "NODE_ENV=production drizzle-kit studio",
     "setup": "bun run scripts/first-time-setup.ts",
+    "seed": "bun run scripts/seed.ts",
     "auth:generate": "IS_CLI=true bunx --yes @better-auth/cli@latest generate --config src/server/auth.ts --output src/server/db/schema.ts -y"
   },
   "dependencies": {
@@ -79,11 +80,14 @@
   "devDependencies": {
     "@clack/prompts": "^0.7.0",
     "@cloudflare/workers-types": "^4.20240903.0",
+    "@faker-js/faker": "^10.1.0",
     "@iarna/toml": "^2.2.5",
+    "@types/bcryptjs": "^3.0.0",
     "@types/node": "^20",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "@vitest/ui": "^3.2.4",
+    "bcryptjs": "^3.0.2",
     "concurrently": "^9.2.1",
     "eslint": "^8",
     "eslint-config-next": "14.2.5",
