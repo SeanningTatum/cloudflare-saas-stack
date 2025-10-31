@@ -575,6 +575,7 @@ async function main() {
   // Update package.json with database name
   const packageJsonPath = path.join(__dirname, "..", "package.json");
   const replacements = {
+    projectName: sanitizeResourceName(projectName),
     dbName,
   };
   replaceHandlebarsInFile(packageJsonPath, replacements);
