@@ -7,8 +7,8 @@ import { useRouter } from "next/navigation"
 import { SiteHeader } from "@/components/dashboard/site-header"
 import { UsersDataTable } from "@/components/admin/users-data-table"
 import { api } from "@/trpc/client"
-import { filterNonAdminUsers } from "@/lib/auth"
-import { authClient } from "@/lib/auth/auth-client"
+import { filterNonAdminUsers } from "@/lib/auth-helpers"
+import { authClient } from "@/auth/client"
 
 export default function UsersPage() {
   const utils = api.useUtils()

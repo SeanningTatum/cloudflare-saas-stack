@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getFromR2 } from "@/lib/bucket";
-import { getCurrentUser } from "@/lib/auth/auth-server";
+import { getCurrentUser } from "@/auth/server";
 import { UPLOAD_PATH_PREFIX } from "@/lib/constants";
 
 interface RouteParams {

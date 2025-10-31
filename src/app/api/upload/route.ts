@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { uploadToR2 } from "@/lib/bucket";
-import { getCurrentUser } from "@/lib/auth/auth-server";
+import { getCurrentUser } from "@/auth/server";
 import {
   MAX_FILE_SIZE,
   MAX_FILE_SIZE_MB,

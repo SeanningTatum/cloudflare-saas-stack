@@ -1,6 +1,6 @@
 import { SignOutButton } from "@/components/auth/signout-button";
 import { DisplayHelloWorld } from "@/components/ai/display-hello-world";
-import { getCurrentUser, requireAuth } from "@/lib/auth/auth-server";
+import { getCurrentUser, requireAuth } from "@/auth/server";
 import { api } from "@/trpc/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
