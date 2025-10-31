@@ -4,7 +4,6 @@ import superjson from "superjson";
 import { auth } from "@/server/auth";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { getDb } from "./db";
-import { inngest } from "./inngest/client";
 import type { User } from "better-auth";
 
 // Extended user type that includes our custom fields
@@ -49,7 +48,6 @@ export const createTRPCContext = cache(async (opts?: { req: Request }) => {
     session,
     user: currentUser,
     headers,
-    inngest,
   };
 });
 

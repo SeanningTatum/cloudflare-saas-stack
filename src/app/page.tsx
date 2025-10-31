@@ -46,7 +46,7 @@ export default async function Page() {
 				<br />
 				An opinionated, batteries-included framework with{" "}
 				<a
-					className="text-transparent bg-clip-text bg-gradient-to-r from-[#a93d64] to-[#275ba9]"
+					className="text-transparent bg-clip-text bg-linear-to-r from-[#a93d64] to-[#275ba9]"
 					href="https://turbo.build"
 				>
 					Turborepo
