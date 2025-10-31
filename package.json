@@ -1,5 +1,5 @@
 {
-  "name": "cloudflare-saas-stack",
+  "name": "{{projectName}}",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -16,8 +16,8 @@
     "deploy": "bun db:migrate:remote && opennextjs-cloudflare deploy",
     "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
     "db:generate": "drizzle-kit generate",
-    "db:migrate:local": "wrangler d1 migrations apply create-admin-panel-db --local",
-    "db:migrate:remote": "wrangler d1 migrations apply create-admin-panel-db --remote",
+    "db:migrate:local": "wrangler d1 migrations apply {{dbName}} --local",
+    "db:migrate:remote": "wrangler d1 migrations apply {{dbName}} --remote",
     "db:migrate:dev": "drizzle-kit migrate",
     "db:migrate:prod": "NODE_ENV=production drizzle-kit migrate",
     "db:studio:dev": "drizzle-kit studio",
