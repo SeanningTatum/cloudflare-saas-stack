@@ -2,14 +2,18 @@
 
 import { useState, useEffect } from "react"
 import { toast } from "sonner"
+import { useRouter } from "next/navigation"
 
 import { SiteHeader } from "@/components/dashboard/site-header"
 import { UsersDataTable } from "@/components/admin/users-data-table"
 import { api } from "@/trpc/client"
 import { filterNonAdminUsers } from "@/lib/auth"
+import { authClient } from "@/lib/auth/auth-client"
 
 export default function UsersPage() {
   const utils = api.useUtils()
+  const router = useRouter()
+  const { refetch } = authClient.useSession()
   const [pagination, setPagination] = useState({
     pageIndex: 0,
     pageSize: 10,
@@ -185,6 +189,26 @@ export default function UsersPage() {
     })
   }
 
+  async function handleImpersonateUser(userId: string) {
+    try {
+      const { error } = await authClient.admin.impersonateUser({
+        userId,
+      })
+
+      if (error) {
+        toast.error(error.message || "Failed to impersonate user")
+        return
+      }
+
+      // Refetch the session to update the UI immediately
+      refetch()
+      toast.success("Successfully impersonating user")
+      router.push("/home")
+    } catch (error) {
+      toast.error("Failed to impersonate user")
+    }
+  }
+
   return (
     <>
       <SiteHeader title="Users" />
@@ -208,6 +232,7 @@ export default function UsersPage() {
             onUnbanUser={handleUnbanUser}
             onDeleteUser={handleDeleteUser}
             onUpdateUserRole={handleUpdateUserRole}
+            onImpersonateUser={handleImpersonateUser}
           />
         )}
       </div>

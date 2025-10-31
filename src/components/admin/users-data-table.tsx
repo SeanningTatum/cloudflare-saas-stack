@@ -26,6 +26,7 @@ import {
   IconShieldCheck,
   IconTrash,
   IconUserOff,
+  IconUserCheck,
 } from "@tabler/icons-react"
 
 import { Badge } from "@/components/ui/badge"
@@ -79,6 +80,7 @@ interface UsersDataTableProps {
   onUnbanUser?: (userId: string) => Promise<void>
   onDeleteUser?: (userId: string) => Promise<void>
   onUpdateUserRole?: (userId: string, role: "user" | "admin") => Promise<void>
+  onImpersonateUser?: (userId: string) => Promise<void>
 }
 
 
@@ -97,6 +99,7 @@ export function UsersDataTable({
   onUnbanUser,
   onDeleteUser,
   onUpdateUserRole,
+  onImpersonateUser,
 }: UsersDataTableProps) {
   const [rowSelection, setRowSelection] = React.useState({})
   const [columnVisibility, setColumnVisibility] =
@@ -220,6 +223,16 @@ export function UsersDataTable({
             <DropdownMenuContent align="end" className="w-40">
               <DropdownMenuItem disabled>View Details</DropdownMenuItem>
               <DropdownMenuItem disabled>Edit User</DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  if (onImpersonateUser) {
+                    onImpersonateUser(user.id)
+                  }
+                }}
+              >
+                <IconUserCheck className="mr-2 size-4" />
+                Impersonate
+              </DropdownMenuItem>
               <DropdownMenuItem
                 disabled={isAdmin}
                 onClick={() => {

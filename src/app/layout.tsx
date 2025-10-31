@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import { TRPCProvider } from "@/trpc/client";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
+import { ImpersonationBanner } from "@/components/admin/impersonation-banner";
 
 import "./globals.css";
 
@@ -29,6 +30,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <body className={inter.className}>
+            <ImpersonationBanner />
             {children}
             <Toaster />
           </body>
