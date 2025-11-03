@@ -8,14 +8,6 @@ export const env = createEnv({
    */
   server: {
     BETTER_AUTH_SECRET: z.string(),
-    INNGEST_EVENT_KEY:
-      process.env.NODE_ENV === "development"
-        ? z.string().optional().nullable()
-        : z.string(),
-    INNGEST_SIGNING_KEY:
-      process.env.NODE_ENV === "development"
-        ? z.string().optional().nullable()
-        : z.string(),
     AUTH_GOOGLE_ID: z.string().optional().nullable(),
     AUTH_GOOGLE_SECRET: z.string().optional().nullable(),
     IS_CLI: z
@@ -39,8 +31,6 @@ export const env = createEnv({
     BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
     AUTH_GOOGLE_ID: process.env.AUTH_GOOGLE_ID,
     AUTH_GOOGLE_SECRET: process.env.AUTH_GOOGLE_SECRET,
-    INNGEST_EVENT_KEY: process.env.INNGEST_EVENT_KEY,
-    INNGEST_SIGNING_KEY: process.env.INNGEST_SIGNING_KEY,
     IS_CLI: process.env.IS_CLI,
   },
   skipValidation:

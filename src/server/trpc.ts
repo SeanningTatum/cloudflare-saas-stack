@@ -5,6 +5,7 @@ import { auth } from "@/server/auth";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { getDb } from "./db";
 import type { User } from "better-auth";
+import type { ExampleWorkflowRequestPayload } from "./workers/example";
 
 // Extended user type that includes our custom fields
 
@@ -13,8 +14,8 @@ import type { User } from "better-auth";
  * @see: https://trpc.io/docs/server/context
  */
 export const createTRPCContext = cache(async (opts?: { req: Request }) => {
-  const db = await getDb();
   const { env } = await getCloudflareContext({ async: true });
+  const db = await getDb(env.DATABASE);
 
   let session = null;
   let currentUser: User | null = null;
@@ -46,8 +47,12 @@ export const createTRPCContext = cache(async (opts?: { req: Request }) => {
     ai: env.AI,
     db,
     session,
-    user: currentUser,
     headers,
+    user: currentUser,
+    workers: {
+      exampleWorkflow:
+        env.EXAMPLE_WORKFLOW as Workflow<ExampleWorkflowRequestPayload>,
+    },
   };
 });
 

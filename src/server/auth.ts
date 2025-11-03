@@ -3,8 +3,9 @@ import { admin } from "better-auth/plugins";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { getDb } from "./db";
 import { env } from "@/env.mjs";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 
-export async function configureAuth(database?: D1Database) {
+export async function configureAuth(database: D1Database) {
   const betterAuthConfig: Omit<BetterAuthOptions, "database"> = {
     plugins: [
       admin({
@@ -45,7 +46,7 @@ export async function configureAuth(database?: D1Database) {
     });
   }
 
-  const db = await getDb();
+  const db = await getDb(database);
 
   return betterAuth({
     database: drizzleAdapter(database ?? db, {
@@ -55,4 +56,6 @@ export async function configureAuth(database?: D1Database) {
   });
 }
 
-export const auth = await configureAuth();
+const { env: cfEnv } = await getCloudflareContext({ async: true });
+
+export const auth = await configureAuth(cfEnv.DATABASE);

@@ -1,0 +1,45 @@
+{
+  "name": "testing-with-worker",
+  "main": "worker.ts",
+  "compatibility_date": "2025-03-25",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "placement": {
+    "mode": "smart"
+  },
+  "d1_databases": [
+    {
+      "binding": "DATABASE",
+      "database_name": "testing-with-worker-db",
+      "database_id": "96965ef3-f37c-493e-a7d6-81ef539fdfc3",
+      "migrations_dir": "./drizzle"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "BUCKET",
+      "bucket_name": "testing-with-worker-bucket"
+    }
+  ],
+  "workflows": [
+    {
+      "binding": "EXAMPLE_WORKFLOW",
+      "name": "testing-with-worker-example-workflow",
+      "class_name": "ExampleWorkflow"
+    }
+  ],
+  "ai": {
+    "binding": "AI"
+  },
+  "observability": {
+    "logs": {
+      "enabled": true,
+      "head_sampling_rate": 1,
+      "invocation_logs": true,
+      "persist": true
+    }
+  }
+}
